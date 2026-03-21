@@ -173,7 +173,7 @@ export function OrderDetailModal({ order }: { order: OrderData }) {
                           <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-500 flex items-center gap-1.5 mb-1 uppercase tracking-wider">
                             <StickyNote className="h-3 w-3" /> Catatan:
                           </p>
-                          <p className="text-xs text-yellow-900 dark:text-yellow-200/80 break-words leading-relaxed">
+                          <p className="text-xs text-yellow-900 dark:text-yellow-200/80 wrap-break-words leading-relaxed">
                             {item.specifications.notes}
                           </p>
                         </div>

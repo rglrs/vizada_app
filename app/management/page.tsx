@@ -172,7 +172,7 @@ export default async function ManagementDashboardPage() {
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.orderNumber}</TableCell>
                         <TableCell>{order.customer.name}</TableCell>
-                        <TableCell className="max-w-[150px] truncate">{order.items[0]?.product.name}</TableCell>
+                        <TableCell className="max-w-37.5 truncate">{order.items[0]?.product.name}</TableCell>
                         <TableCell className="font-semibold">{formatRupiah(order.totalAmount)}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                       </TableRow>
@@ -191,7 +191,7 @@ export default async function ManagementDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex h-[250px] items-end gap-2 pt-6">
+            <div className="flex h-62.5 items-end gap-2 pt-6">
               {chartData.map((data, idx) => {
                 const heightPercentage = (data.total / maxChartValue) * 100
                 return (

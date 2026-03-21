@@ -37,7 +37,7 @@ export function ProductionButton({ orderId }: { orderId: string }) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle>Laporan Quality Control (QC)</DialogTitle>
           </DialogHeader>
@@ -65,7 +65,7 @@ export function ProductionButton({ orderId }: { orderId: string }) {
                 id="qcNotes"
                 name="qcNotes" 
                 placeholder="Berikan catatan jika ada warna meleset, bahan rusak, dll..." 
-                className="w-full min-h-[100px]"
+                className="w-full min-h-25"
               />
             </div>
 
