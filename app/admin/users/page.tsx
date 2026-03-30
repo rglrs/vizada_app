@@ -1,15 +1,41 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
 import { UserActions } from "./user-actions"
 
-export default async function UserManagementPage() {
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" }
-  })
+type PageProps = {
+  searchParams: Promise<{ q?: string; page?: string; limit?: string }> | { q?: string; page?: string; limit?: string }
+}
+
+export default async function UserManagementPage({ searchParams }: PageProps) {
+  const sp = await Promise.resolve(searchParams)
+  const q = sp?.q || ""
+  const page = parseInt(sp?.page || "1")
+  const limit = parseInt(sp?.limit || "10")
+  const skip = (page - 1) * limit
+
+  const where = q ? {
+    OR: [
+      { name: { contains: q, mode: "insensitive" as const } },
+      { email: { contains: q, mode: "insensitive" as const } }
+    ]
+  } : {}
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit
+    }),
+    prisma.user.count({ where })
+  ])
+
+  const totalPages = Math.ceil(total / limit)
 
   return (
     <div className="space-y-6">
@@ -24,6 +50,20 @@ export default async function UserManagementPage() {
           </Button>
         </Link>
       </div>
+
+      <form method="GET" className="flex flex-col sm:flex-row gap-2">
+        <Input name="q" defaultValue={q} placeholder="Cari nama atau email..." className="sm:max-w-[300px]" />
+        <select
+          name="limit"
+          defaultValue={limit.toString()}
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option value="10">10 data per halaman</option>
+          <option value="25">25 data per halaman</option>
+          <option value="50">50 data per halaman</option>
+        </select>
+        <Button type="submit" variant="secondary">Cari</Button>
+      </form>
       
       <Card>
         <CardHeader>
@@ -32,7 +72,7 @@ export default async function UserManagementPage() {
         <CardContent>
           {users.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
-              Belum ada pengguna yang terdaftar.
+              Data tidak ditemukan.
             </div>
           ) : (
             <Table>
@@ -59,6 +99,28 @@ export default async function UserManagementPage() {
                 ))}
               </TableBody>
             </Table>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-6">
+              <span className="text-sm text-muted-foreground">
+                Menampilkan {users.length} dari {total} data
+              </span>
+              <div className="flex gap-2">
+                <Link
+                  href={`?q=${q}&limit=${limit}&page=${page - 1}`}
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+                >
+                  Sebelumnya
+                </Link>
+                <Link
+                  href={`?q=${q}&limit=${limit}&page=${page + 1}`}
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
+                >
+                  Selanjutnya
+                </Link>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

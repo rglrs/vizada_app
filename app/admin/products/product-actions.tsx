@@ -4,26 +4,17 @@ import { useState } from "react"
 import Link from "next/link"
 import { deleteProduct } from "@/app/actions/product"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit, Trash2, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
 interface ProductActionsProps {
-  productId: string;
+  productId: string
 }
 
 export function ProductActions({ productId }: ProductActionsProps) {
+  const [isOpen, setIsOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
@@ -34,6 +25,7 @@ export function ProductActions({ productId }: ProductActionsProps) {
       toast.error(result.error)
     } else {
       toast.success("Produk berhasil dihapus")
+      setIsOpen(false)
     }
     
     setIsDeleting(false)
@@ -47,31 +39,30 @@ export function ProductActions({ productId }: ProductActionsProps) {
         </Button>
       </Link>
       
-      <AlertDialog>
-        <AlertDialogTrigger 
-          className={cn(buttonVariants({ variant: "destructive", size: "icon" }), "h-8 w-8")}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger 
+          className={cn(buttonVariants({ variant: "destructive", size: "icon" }), "h-8 w-8 cursor-pointer")}
           disabled={isDeleting}
         >
           <Trash2 className="h-4 w-4" />
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tindakan ini tidak dapat dibatalkan. Produk akan dihapus secara permanen dari basis data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete} 
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Hapus
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Hapus Produk</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Apakah Anda yakin ingin menghapus produk ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isDeleting}>Batal</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Ya, Hapus"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

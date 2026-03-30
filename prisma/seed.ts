@@ -14,34 +14,34 @@ async function main() {
 
   console.log('👥 Membuat data pengguna...')
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@vizada.com' },
+    where: { email: 'admin@mail.com' },
     update: {},
-    create: { name: 'Admin Utama', email: 'admin@vizada.com', passwordHash: defaultPassword, role: 'ADMIN', phone: '0811111111' },
+    create: { name: 'Admin Utama', email: 'admin@mail.com', passwordHash: defaultPassword, role: 'ADMIN', phone: '0811111111' },
   })
   const operator1 = await prisma.user.upsert({
-    where: { email: 'operator@vizada.com' },
+    where: { email: 'operator@mail.com' },
     update: {},
-    create: { name: 'Budi Operator', email: 'operator@vizada.com', passwordHash: defaultPassword, role: 'OPERATOR', phone: '0822222222' },
+    create: { name: 'Budi Operator', email: 'operator@mail.com', passwordHash: defaultPassword, role: 'OPERATOR', phone: '0822222222' },
   })
   const operator2 = await prisma.user.upsert({
-    where: { email: 'operator2@vizada.com' },
+    where: { email: 'operator2@mail.com' },
     update: {},
-    create: { name: 'Siti Operator', email: 'operator2@vizada.com', passwordHash: defaultPassword, role: 'OPERATOR', phone: '0833333333' },
+    create: { name: 'Siti Operator', email: 'operator2@mail.com', passwordHash: defaultPassword, role: 'OPERATOR', phone: '0833333333' },
   })
   const management = await prisma.user.upsert({
-    where: { email: 'management@vizada.com' },
+    where: { email: 'management@mail.com' },
     update: {},
-    create: { name: 'Manager Produksi', email: 'management@vizada.com', passwordHash: defaultPassword, role: 'MANAGEMENT', phone: '0844444444' },
+    create: { name: 'Manager Produksi', email: 'management@mail.com', passwordHash: defaultPassword, role: 'MANAGEMENT', phone: '0844444444' },
   })
   const customer1 = await prisma.user.upsert({
-    where: { email: 'customer@vizada.com' },
+    where: { email: 'customer@mail.com' },
     update: {},
-    create: { name: 'Pelanggan Setia', email: 'customer@vizada.com', passwordHash: defaultPassword, role: 'CUSTOMER', phone: '0855555555' },
+    create: { name: 'Pelanggan Setia', email: 'customer@mail.com', passwordHash: defaultPassword, role: 'CUSTOMER', phone: '0855555555' },
   })
   const customer2 = await prisma.user.upsert({
-    where: { email: 'joko@gmail.com' },
+    where: { email: 'joko@mail.com' },
     update: {},
-    create: { name: 'Joko Anwar', email: 'joko@gmail.com', passwordHash: defaultPassword, role: 'CUSTOMER', phone: '0866666666' },
+    create: { name: 'Joko Anwar', email: 'joko@mail.com', passwordHash: defaultPassword, role: 'CUSTOMER', phone: '0866666666' },
   })
 
   console.log('📂 Membuat kategori produk...')

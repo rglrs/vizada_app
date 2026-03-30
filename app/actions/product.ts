@@ -8,8 +8,44 @@ export async function createCategory(formData: FormData) {
   if (!name) return { error: "Nama kategori wajib diisi" }
   
   await prisma.category.create({ data: { name } })
+  revalidatePath("/admin/products")
   revalidatePath("/admin/products/create")
   return { success: true }
+}
+
+export async function updateCategory(id: string, name: string) {
+  if (!name) return { error: "Nama kategori wajib diisi" }
+  
+  try {
+    await prisma.category.update({
+      where: { id },
+      data: { name }
+    })
+    revalidatePath("/admin/products")
+    revalidatePath("/admin/products/create")
+    return { success: true }
+  } catch {
+    return { error: "Gagal memperbarui kategori" }
+  }
+}
+
+export async function deleteCategory(id: string) {
+  try {
+    const productsCount = await prisma.product.count({
+      where: { categoryId: id }
+    })
+
+    if (productsCount > 0) {
+      return { error: "Gagal menghapus: Kategori ini masih digunakan oleh produk." }
+    }
+
+    await prisma.category.delete({ where: { id } })
+    revalidatePath("/admin/products")
+    revalidatePath("/admin/products/create")
+    return { success: true }
+  } catch {
+    return { error: "Gagal menghapus kategori" }
+  }
 }
 
 export async function createProduct(formData: FormData) {

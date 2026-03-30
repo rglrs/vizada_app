@@ -1,19 +1,47 @@
+import Link from "next/link"
 import { prisma } from "@/lib/prisma"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { OrderDetailModal } from "./order-detail-modal"
 
-export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      customer: true,
-      payment: true,
-      items: {
-        include: { product: true }
+type PageProps = {
+  searchParams: Promise<{ q?: string; page?: string; limit?: string }> | { q?: string; page?: string; limit?: string }
+}
+
+export default async function AdminOrdersPage({ searchParams }: PageProps) {
+  const sp = await Promise.resolve(searchParams)
+  const q = sp?.q || ""
+  const page = parseInt(sp?.page || "1")
+  const limit = parseInt(sp?.limit || "10")
+  const skip = (page - 1) * limit
+
+  const where = q ? {
+    OR: [
+      { orderNumber: { contains: q, mode: "insensitive" as const } },
+      { customer: { name: { contains: q, mode: "insensitive" as const } } }
+    ]
+  } : {}
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+      include: {
+        customer: true,
+        payment: true,
+        items: {
+          include: { product: true }
+        }
       }
-    }
-  })
+    }),
+    prisma.order.count({ where })
+  ])
+
+  const totalPages = Math.ceil(total / limit)
 
   const formatRupiah = (price: number) => {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(price)
@@ -37,6 +65,20 @@ export default async function AdminOrdersPage() {
         <h1 className="text-3xl font-bold tracking-tight">Manajemen Pesanan</h1>
         <p className="text-muted-foreground">Pantau dan kelola semua pesanan masuk dari pelanggan.</p>
       </div>
+
+      <form method="GET" className="flex flex-col sm:flex-row gap-2">
+        <Input name="q" defaultValue={q} placeholder="Cari invoice atau nama..." className="sm:max-w-[300px]" />
+        <select
+          name="limit"
+          defaultValue={limit.toString()}
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option value="10">10 baris data</option>
+          <option value="25">25 baris data</option>
+          <option value="50">50 baris data</option>
+        </select>
+        <Button type="submit" variant="secondary">Cari</Button>
+      </form>
       
       <Card>
         <CardHeader>
@@ -46,7 +88,7 @@ export default async function AdminOrdersPage() {
         <CardContent>
           {orders.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
-              Belum ada pesanan yang masuk saat ini.
+              Data pesanan tidak ditemukan.
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -103,6 +145,28 @@ export default async function AdminOrdersPage() {
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-6">
+              <span className="text-sm text-muted-foreground">
+                Menampilkan {orders.length} dari {total} pesanan
+              </span>
+              <div className="flex gap-2">
+                <Link
+                  href={`?q=${q}&limit=${limit}&page=${page - 1}`}
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+                >
+                  Sebelumnya
+                </Link>
+                <Link
+                  href={`?q=${q}&limit=${limit}&page=${page + 1}`}
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
+                >
+                  Selanjutnya
+                </Link>
+              </div>
             </div>
           )}
         </CardContent>

@@ -42,6 +42,15 @@ interface OrderData {
   items: OrderItem[]
 }
 
+const STATUS_MAP: Record<string, string> = {
+  PENDING_PAYMENT: "Menunggu Pembayaran",
+  WAITING_APPROVAL: "Menunggu Persetujuan",
+  IN_PRODUCTION: "Sedang Diproduksi",
+  READY_FOR_PICKUP: "Siap Diambil",
+  COMPLETED: "Selesai",
+  CANCELLED: "Dibatalkan"
+}
+
 export function OrderDetailModal({ order }: { order: OrderData }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -107,8 +116,10 @@ export function OrderDetailModal({ order }: { order: OrderData }) {
                   Status Pesanan
                 </h4>
                 <Select value={status} onValueChange={handleStatusChange} disabled={isLoading}>
-                  <SelectTrigger className="h-9 text-sm font-medium">
-                    <SelectValue placeholder="Pilih Status" />
+                  <SelectTrigger className="h-9 w-full text-sm font-medium">
+                    <SelectValue placeholder="Pilih Status">
+                      {STATUS_MAP[status]}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="PENDING_PAYMENT" className="text-sm">Menunggu Pembayaran</SelectItem>

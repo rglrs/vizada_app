@@ -35,9 +35,9 @@ export function SharedDashboardLayout({
   }, [])
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-muted/40 md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
+    <div className="grid h-screen w-full overflow-hidden md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="hidden border-r bg-muted/40 md:block h-full overflow-hidden">
+        <div className="flex h-full flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-15 lg:px-6">
             <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-primary">
               {title}
@@ -72,7 +72,7 @@ export function SharedDashboardLayout({
           </div>
         </div>
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full overflow-hidden">
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-15 lg:px-6">
           {mounted ? (
             <Sheet>
@@ -123,7 +123,7 @@ export function SharedDashboardLayout({
             )}
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           {children}
         </main>
       </div>
