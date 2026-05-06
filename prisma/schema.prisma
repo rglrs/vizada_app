@@ -59,6 +59,44 @@ enum MachineStatus {
   MAINTENANCE
 }
 
+enum ExpenseCategory {
+  OPERASIONAL
+  BAHAN_BAKU
+  LISTRIK
+  MAINTENANCE
+  LAINNYA
+}
+
+enum FinancialTransactionType {
+  PEMASUKAN
+  PENGELUARAN
+}
+
+enum MachineMaintenanceType {
+  RUTIN
+  PERBAIKAN
+  INSPEKSI
+}
+
+enum PromoType {
+  DISKON_PERSEN
+  DISKON_NOMINAL
+  VOUCHER
+  BUNDLING
+}
+
+enum QCChecklistStatus {
+  PASSED
+  REJECTED
+  NEEDS_REWORK
+}
+
+enum SchedulePriority {
+  URGENT
+  NORMAL
+  LOW
+}
+
 // ================= MODELS =================
 
 // 1. PENGGUNA & AUTENTIKASI (Tetap milikmu)
@@ -211,34 +249,38 @@ model Payment {
 
 // TAMBAHAN: Modul Mesin Cetak (Sesuai proposal "alokasi mesin cetak")
 model Machine {
-  id             String          @id @default(uuid())
+  id             String                @id @default(uuid())
   name           String
-  status         MachineStatus   @default(AVAILABLE)
+  status         MachineStatus         @default(AVAILABLE)
   productionJobs ProductionJob[]
-  createdAt      DateTime        @default(now())
+  maintenanceLogs MachineMaintenanceLog[] @relation("MaintenanceLogs")
+  schedules      MaintenanceSchedule[]  @relation("MaintenanceSchedules")
+  createdAt      DateTime              @default(now())
 }
 
 // 5. PRODUKSI & QUALITY CONTROL (QC)
 model ProductionJob {
-  id          String           @id @default(uuid())
-  orderItemId String           @unique
-  operatorId  String?          
-  status      ProductionStatus @default(QUEUE)
-  
-  // PERUBAHAN: machineName String? diganti jadi relasi ke model Machine
-  machineId   String?
-  machine     Machine?         @relation(fields: [machineId], references: [id])
-  
-  notes       String?          
+  id          String               @id @default(uuid())
+  orderItemId String               @unique
+  operatorId  String?
+  status      ProductionStatus     @default(QUEUE)
 
-  orderItem   OrderItem        @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
-  operator    User?            @relation("OperatorJobs", fields: [operatorId], references: [id])
+  machineId   String?
+  machine     Machine?             @relation(fields: [machineId], references: [id])
+
+  notes       String?
+
+  orderItem   OrderItem            @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  operator    User?                @relation("OperatorJobs", fields: [operatorId], references: [id])
   qcRecord    QualityControl?
+  qcItems     QCChecklistItem[]    @relation("QCItems")
+  photos      PhotoRecord[]        @relation("PhotoRecords")
+  schedules   ProductionSchedule[] @relation("Schedules")
 
   startedAt   DateTime?
   completedAt DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 }
 
 model QualityControl {
@@ -272,10 +314,162 @@ model Notification {
 model Archive {
   id          String   @id @default(uuid())
   orderId     String
-  documentUrl String   // Link PDF Invoice, SPK, atau Laporan Akhir
-  title       String   // e.g., "Invoice Lunas", "SPK Selesai"
-  
+  documentUrl String
+  title       String
+
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+
   createdAt   DateTime @default(now())
+}
+
+model FinancialCategory {
+  id           String                  @id @default(uuid())
+  name         String
+  type         FinancialTransactionType
+  transactions FinancialTransaction[]
+  createdAt    DateTime                @default(now())
+}
+
+model FinancialTransaction {
+  id         String                  @id @default(uuid())
+  categoryId String
+  type       FinancialTransactionType
+  amount     Float
+  description String?
+
+  category   FinancialCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+}
+
+model MachineMaintenanceLog {
+  id          String                  @id @default(uuid())
+  machineId   String
+  type        MachineMaintenanceType
+  description String?
+  cost        Float?
+
+  machine     Machine                 @relation("MaintenanceLogs", fields: [machineId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime                @default(now())
+}
+
+model MaintenanceSchedule {
+  id          String    @id @default(uuid())
+  machineId   String
+  interval    Int
+  lastDone    DateTime?
+  nextDue     DateTime
+  notes       String?
+
+  machine     Machine   @relation("MaintenanceSchedules", fields: [machineId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Promotion {
+  id         String    @id @default(uuid())
+  name       String
+  type       PromoType
+  value      Float
+  startDate  DateTime
+  endDate    DateTime
+  active     Boolean   @default(true)
+
+  vouchers   VoucherCode[]
+  usages     PromoUsage[]
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model VoucherCode {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  promotionId String
+  used        Boolean   @default(false)
+  usedAt      DateTime?
+
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  usage       PromoUsage?
+
+  createdAt   DateTime  @default(now())
+}
+
+model PromoUsage {
+  id           String       @id @default(uuid())
+  promotionId  String
+  voucherCodeId String?      @unique
+  orderId      String?
+  discountAmount Float
+
+  promotion    Promotion    @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  voucher      VoucherCode? @relation(fields: [voucherCodeId], references: [id], onDelete: SetNull)
+
+  createdAt    DateTime     @default(now())
+}
+
+model QCChecklistItem {
+  id                String            @id @default(uuid())
+  productionJobId   String
+  checkName         String
+  status            QCChecklistStatus
+  notes             String?
+
+  productionJob     ProductionJob     @relation("QCItems", fields: [productionJobId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime          @default(now())
+}
+
+model PhotoRecord {
+  id              String            @id @default(uuid())
+  productionJobId String
+  photoUrl        String
+  notes           String?
+
+  productionJob   ProductionJob     @relation("PhotoRecords", fields: [productionJobId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime          @default(now())
+}
+
+model ProductionSchedule {
+  id              String              @id @default(uuid())
+  productionJobId String
+  machineId       String?
+  operatorId      String?
+  scheduledDate   DateTime
+  priority        SchedulePriority    @default(NORMAL)
+  status          String              @default("scheduled")
+  notes           String?
+
+  productionJob   ProductionJob       @relation("Schedules", fields: [productionJobId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model BundleProduct {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  bundlePrice  Float
+  active       Boolean  @default(true)
+  products     String   @default("[]")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MaterialEstimate {
+  id           String   @id @default(uuid())
+  orderId      String?
+  materialId   String
+  estimatedQty Float
+  actualQty    Float?
+  notes        String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '../app/generated/prisma'
+import { PrismaClient } from '../app/generated/prisma/client'
 import bcrypt from 'bcryptjs'
 
 const connectionString = `${process.env.DATABASE_URL}`
@@ -10,180 +10,225 @@ const prisma = new PrismaClient({ adapter })
 async function main() {
   const defaultPassword = await bcrypt.hash('password123', 10)
 
-  console.log('🔄 Memulai proses seeding data Vizada...')
+  console.log('Memulai proses seeding data Vizada ERP...')
 
-  console.log('👥 Membuat data pengguna...')
+  console.log('1. Membuat Data Pengguna...')
   const admin = await prisma.user.upsert({
     where: { email: 'admin@mail.com' },
     update: {},
     create: { name: 'Admin Utama', email: 'admin@mail.com', passwordHash: defaultPassword, role: 'ADMIN', phone: '0811111111' },
   })
+
   const operator1 = await prisma.user.upsert({
     where: { email: 'operator@mail.com' },
     update: {},
     create: { name: 'Budi Operator', email: 'operator@mail.com', passwordHash: defaultPassword, role: 'OPERATOR', phone: '0822222222' },
   })
-  const operator2 = await prisma.user.upsert({
-    where: { email: 'operator2@mail.com' },
-    update: {},
-    create: { name: 'Siti Operator', email: 'operator2@mail.com', passwordHash: defaultPassword, role: 'OPERATOR', phone: '0833333333' },
-  })
+
   const management = await prisma.user.upsert({
     where: { email: 'management@mail.com' },
     update: {},
     create: { name: 'Manager Produksi', email: 'management@mail.com', passwordHash: defaultPassword, role: 'MANAGEMENT', phone: '0844444444' },
   })
+
   const customer1 = await prisma.user.upsert({
     where: { email: 'customer@mail.com' },
     update: {},
     create: { name: 'Pelanggan Setia', email: 'customer@mail.com', passwordHash: defaultPassword, role: 'CUSTOMER', phone: '0855555555' },
   })
-  const customer2 = await prisma.user.upsert({
-    where: { email: 'joko@mail.com' },
-    update: {},
-    create: { name: 'Joko Anwar', email: 'joko@mail.com', passwordHash: defaultPassword, role: 'CUSTOMER', phone: '0866666666' },
-  })
 
-  console.log('📂 Membuat kategori produk...')
+  console.log('2. Membuat Kategori & Supplier...')
   const catDigital = await prisma.category.create({ data: { name: 'Digital Printing A3+' } })
   const catOutdoor = await prisma.category.create({ data: { name: 'Large Format (Outdoor)' } })
-  const catIndoor = await prisma.category.create({ data: { name: 'Large Format (Indoor)' } })
-  const catMerch = await prisma.category.create({ data: { name: 'Merchandise & Souvenir' } })
-  await prisma.category.create({ data: { name: 'Offset Printing' } })
 
-  console.log('🏭 Membuat data supplier...')
-  const supKertas = await prisma.supplier.create({ data: { name: 'PT Kertas Nasional', contact: '021-999888 (Pak Yanto)' } })
-  const supTinta = await prisma.supplier.create({ data: { name: 'CV Tinta Makmur', contact: '081299997777 (Ibu Desi)' } })
-  const supMerch = await prisma.supplier.create({ data: { name: 'Grosir Souvenir JKT', contact: '021-555444' } })
-  const supBahanBesar = await prisma.supplier.create({ data: { name: 'Mega Flexiindo', contact: '085566667777' } })
+  const supKertas = await prisma.supplier.create({ data: { name: 'PT Kertas Nasional', contact: '021-999888' } })
+  const supTinta = await prisma.supplier.create({ data: { name: 'CV Tinta Makmur', contact: '081299997777' } })
 
-  console.log('📦 Membuat data bahan baku (Material)...')
-  const matArtCarton260 = await prisma.material.create({ data: { name: 'Art Carton 260gr (A3+)', stockQty: 5000, minStock: 500, unit: 'Lembar', supplierId: supKertas.id } })
-  const matArtPaper150 = await prisma.material.create({ data: { name: 'Art Paper 150gr (A3+)', stockQty: 8000, minStock: 1000, unit: 'Lembar', supplierId: supKertas.id } })
-  const matStikerVinyl = await prisma.material.create({ data: { name: 'Stiker Vinyl A3+', stockQty: 3000, minStock: 300, unit: 'Lembar', supplierId: supKertas.id } })
-  
-  const matTintaToner = await prisma.material.create({ data: { name: 'Toner CMYK', stockQty: 20, minStock: 5, unit: 'Cartridge', supplierId: supTinta.id } })
-  const matTintaSolvent = await prisma.material.create({ data: { name: 'Tinta Solvent (Outdoor)', stockQty: 50, minStock: 10, unit: 'Liter', supplierId: supTinta.id } })
-  const matTintaEco = await prisma.material.create({ data: { name: 'Tinta Eco-Solvent (Indoor)', stockQty: 30, minStock: 5, unit: 'Liter', supplierId: supTinta.id } })
-  const matTintaSublim = await prisma.material.create({ data: { name: 'Tinta Sublim', stockQty: 15, minStock: 3, unit: 'Liter', supplierId: supTinta.id } })
-
-  const matFlexi280 = await prisma.material.create({ data: { name: 'Bahan Flexi 280gsm', stockQty: 500, minStock: 50, unit: 'Meter', supplierId: supBahanBesar.id } })
-  await prisma.material.create({ data: { name: 'Bahan Flexi Korea 440gsm', stockQty: 300, minStock: 50, unit: 'Meter', supplierId: supBahanBesar.id } })
-  const matAlbatros = await prisma.material.create({ data: { name: 'Kertas Albatros', stockQty: 200, minStock: 20, unit: 'Meter', supplierId: supBahanBesar.id } })
-
-  const matMugPolos = await prisma.material.create({ data: { name: 'Mug Putih Polos', stockQty: 500, minStock: 100, unit: 'Pcs', supplierId: supMerch.id } })
-  const matPinBahan = await prisma.material.create({ data: { name: 'Bahan Pin 58mm', stockQty: 2000, minStock: 500, unit: 'Set', supplierId: supMerch.id } })
-
-  console.log('🛍️ Membuat data produk dan resep BOM...')
-  
-  await prisma.product.create({
-    data: {
-      categoryId: catDigital.id, name: 'Cetak Brosur A4 (1 Sisi)', description: 'Brosur full color bahan Art Paper 150gr. Harga per 1 rim (500 lbr).', basePrice: 150000, unit: 'Rim',
-      materials: {
-        create: [
-          { materialId: matArtPaper150.id, qtyNeeded: 250 },
-          { materialId: matTintaToner.id, qtyNeeded: 0.05 }
-        ]
-      }
-    }
+  console.log('3. Membuat Material & Log Inventaris...')
+  const matArtPaper = await prisma.material.create({ 
+    data: { name: 'Art Paper 150gr (A3+)', stockQty: 8000, minStock: 1000, unit: 'Lembar', supplierId: supKertas.id } 
+  })
+  const matTinta = await prisma.material.create({ 
+    data: { name: 'Toner CMYK', stockQty: 20, minStock: 5, unit: 'Cartridge', supplierId: supTinta.id } 
+  })
+  const matFlexi = await prisma.material.create({ 
+    data: { name: 'Bahan Flexi 280gsm', stockQty: 50, minStock: 50, unit: 'Meter', supplierId: supKertas.id } 
   })
 
-  await prisma.product.create({
-    data: {
-      categoryId: catDigital.id, name: 'Cetak Kartu Nama (1 Box)', description: 'Bahan Art Carton 260gr, isi 100 pcs/box.', basePrice: 25000, unit: 'Box',
-      materials: {
-        create: [
-          { materialId: matArtCarton260.id, qtyNeeded: 5 },
-          { materialId: matTintaToner.id, qtyNeeded: 0.01 }
-        ]
-      }
-    }
-  })
-
-  await prisma.product.create({
-    data: {
-      categoryId: catDigital.id, name: 'Cetak Stiker Vinyl A3+ (Kiss Cut)', description: 'Stiker anti air, sudah termasuk potong bentuk.', basePrice: 12000, unit: 'Lembar A3+',
-      materials: {
-        create: [
-          { materialId: matStikerVinyl.id, qtyNeeded: 1 },
-          { materialId: matTintaToner.id, qtyNeeded: 0.02 }
-        ]
-      }
-    }
-  })
-
-  await prisma.product.create({
-    data: {
-      categoryId: catOutdoor.id, name: 'Cetak Spanduk / Banner 280gr', description: 'Bahan Flexi China 280gr. Harga per meter persegi.', basePrice: 15000, unit: 'Meter Persegi',
-      materials: {
-        create: [
-          { materialId: matFlexi280.id, qtyNeeded: 1 }, 
-          { materialId: matTintaSolvent.id, qtyNeeded: 0.05 }
-        ]
-      }
-    }
-  })
-
-  await prisma.product.create({
-    data: {
-      categoryId: catIndoor.id, name: 'X-Banner Albatros (60x160cm)', description: 'Cetak hi-res indoor, sudah termasuk tiang X-Banner.', basePrice: 85000, unit: 'Set',
-      materials: {
-        create: [
-          { materialId: matAlbatros.id, qtyNeeded: 1.6 },
-          { materialId: matTintaEco.id, qtyNeeded: 0.08 }
-        ]
-      }
-    }
-  })
-
-  await prisma.product.create({
-    data: {
-      categoryId: catMerch.id, name: 'Cetak Mug Custom', description: 'Mug keramik putih standar dengan cetak full color.', basePrice: 20000, unit: 'Pcs',
-      materials: {
-        create: [
-          { materialId: matMugPolos.id, qtyNeeded: 1 },
-          { materialId: matTintaSublim.id, qtyNeeded: 0.01 }
-        ]
-      }
-    }
-  })
-
-  await prisma.product.create({
-    data: {
-      categoryId: catMerch.id, name: 'Pin Gantungan Kunci 58mm', description: 'Pin custom lapis laminasi glossy/doff.', basePrice: 3500, unit: 'Pcs',
-      materials: {
-        create: [
-          { materialId: matPinBahan.id, qtyNeeded: 1 },
-          { materialId: matArtPaper150.id, qtyNeeded: 0.05 },
-          { materialId: matTintaToner.id, qtyNeeded: 0.001 }
-        ]
-      }
-    }
-  })
-
-  console.log('⚙️ Membuat data mesin cetak...')
-  await prisma.machine.createMany({
+  await prisma.inventoryLog.createMany({
     data: [
-      { name: 'Konica Minolta AccurioPress (A3+)', status: 'AVAILABLE' },
-      { name: 'Fuji Xerox Versant (A3+)', status: 'IN_USE' },
-      { name: 'Mesin Outdoor Flora Polaris 3.2m', status: 'AVAILABLE' },
-      { name: 'Mesin Indoor Roland VersaEXPRESS', status: 'AVAILABLE' },
-      { name: 'Mesin Laser Cutting Bodor', status: 'MAINTENANCE' },
-      { name: 'Mesin Press Mug Double', status: 'AVAILABLE' },
-      { name: 'Mesin Plong Pin Custom', status: 'AVAILABLE' }
+      { materialId: matArtPaper.id, type: 'IN', qty: 8000, notes: 'Stok Awal' },
+      { materialId: matTinta.id, type: 'IN', qty: 20, notes: 'Stok Awal' },
+      { materialId: matFlexi.id, type: 'IN', qty: 50, notes: 'Stok Awal' }
     ]
   })
 
-  console.log('✅ Semua data berhasil di-seed!')
-  console.log('----------------------------------------------------')
-  console.log('Akun yang bisa digunakan (Password: password123):')
-  console.log(`👑 ADMIN      : ${admin.email}`)
-  console.log(`👨‍🔧 OPERATOR 1 : ${operator1.email}`)
-  console.log(`👩‍🔧 OPERATOR 2 : ${operator2.email}`)
-  console.log(`👔 MANAGEMENT : ${management.email}`)
-  console.log(`🛒 CUSTOMER 1 : ${customer1.email}`)
-  console.log(`🛒 CUSTOMER 2 : ${customer2.email}`)
-  console.log('----------------------------------------------------')
+  console.log('4. Membuat Produk & BOM (Bill of Materials)...')
+  const prodBrosur = await prisma.product.create({
+    data: {
+      categoryId: catDigital.id, name: 'Cetak Brosur A4', description: 'Harga per 1 rim.', basePrice: 150000, unit: 'Rim',
+      materials: {
+        create: [
+          { materialId: matArtPaper.id, qtyNeeded: 250 },
+          { materialId: matTinta.id, qtyNeeded: 0.05 }
+        ]
+      }
+    }
+  })
+
+  const prodSpanduk = await prisma.product.create({
+    data: {
+      categoryId: catOutdoor.id, name: 'Spanduk 280gr', description: 'Harga per meter.', basePrice: 15000, unit: 'Meter',
+      materials: {
+        create: [
+          { materialId: matFlexi.id, qtyNeeded: 1 },
+          { materialId: matTinta.id, qtyNeeded: 0.02 }
+        ]
+      }
+    }
+  })
+
+  console.log('5. Membuat Mesin & Jadwal Maintenance...')
+  const machine1 = await prisma.machine.create({ data: { name: 'Konica Minolta (A3+)', status: 'AVAILABLE' } })
+  const machine2 = await prisma.machine.create({ data: { name: 'Mesin Outdoor Flora', status: 'IN_USE' } })
+
+  await prisma.maintenanceSchedule.create({
+    data: {
+      machineId: machine1.id,
+      interval: 30,
+      nextDue: new Date(new Date().setDate(new Date().getDate() + 15)),
+      notes: 'Ganti drum unit bulanan'
+    }
+  })
+
+  console.log('6. Membuat Kategori Keuangan & Transaksi Awal...')
+  const catModal = await prisma.financialCategory.create({ data: { name: 'Modal Usaha', type: 'PEMASUKAN' } })
+  const catBahan = await prisma.financialCategory.create({ data: { name: 'Belanja Bahan', type: 'PENGELUARAN' } })
+  const catSales = await prisma.financialCategory.create({ data: { name: 'Penjualan', type: 'PEMASUKAN' } })
+
+  await prisma.financialTransaction.createMany({
+    data: [
+      { categoryId: catModal.id, type: 'PEMASUKAN', amount: 50000000, description: 'Suntikan modal awal' },
+      { categoryId: catBahan.id, type: 'PENGELUARAN', amount: 15000000, description: 'Beli stok kertas & tinta' }
+    ]
+  })
+
+  console.log('7. Membuat Promosi & Voucher...')
+  await prisma.promotion.create({
+    data: {
+      name: 'Diskon Akhir Tahun',
+      type: 'DISKON_PERSEN',
+      value: 10,
+      startDate: new Date(),
+      endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+      active: true
+    }
+  })
+
+  console.log('8. Simulasi Pesanan, Produksi, dan QC...')
+  const order1 = await prisma.order.create({
+    data: {
+      orderNumber: 'VZ-20260506-1001',
+      customerId: customer1.id,
+      status: 'COMPLETED',
+      totalAmount: 300000,
+      deadline: new Date(new Date().setDate(new Date().getDate() + 2)),
+      items: {
+        create: {
+          productId: prodBrosur.id,
+          qty: 2,
+          specifications: { notes: "Warna cerah" },
+          subtotal: 300000
+        }
+      },
+      payment: {
+        create: {
+          amount: 300000,
+          method: 'BCA - 1234567890 (Vizada)',
+          status: 'PAID',
+          paidAt: new Date()
+        }
+      }
+    },
+    include: { items: true }
+  })
+
+  await prisma.financialTransaction.create({
+    data: { categoryId: catSales.id, type: 'PEMASUKAN', amount: 300000, description: `Pembayaran Order ${order1.orderNumber}` }
+  })
+
+  const job1 = await prisma.productionJob.create({
+    data: {
+      orderItemId: order1.items[0].id,
+      operatorId: operator1.id,
+      machineId: machine1.id,
+      status: 'DONE',
+      startedAt: new Date(),
+      completedAt: new Date()
+    }
+  })
+
+  await prisma.qualityControl.create({
+    data: {
+      productionJobId: job1.id,
+      inspectorId: operator1.id,
+      status: 'PASSED',
+      notes: '[QC: PASSED] Hasil potong rapi, warna sesuai.'
+    }
+  })
+
+  const order2 = await prisma.order.create({
+    data: {
+      orderNumber: 'VZ-20260506-1002',
+      customerId: customer1.id,
+      status: 'IN_PRODUCTION',
+      totalAmount: 75000,
+      deadline: new Date(new Date().setDate(new Date().getDate() + 1)),
+      items: {
+        create: {
+          productId: prodSpanduk.id,
+          qty: 5,
+          specifications: { notes: "Kasih mata ayam tiap sudut" },
+          subtotal: 75000
+        }
+      },
+      payment: {
+        create: {
+          amount: 75000,
+          method: 'BRI - 0987654321 (Vizada)',
+          status: 'PAID',
+          paidAt: new Date()
+        }
+      }
+    },
+    include: { items: true }
+  })
+
+  const job2 = await prisma.productionJob.create({
+    data: {
+      orderItemId: order2.items[0].id,
+      status: 'PRINTING',
+      machineId: machine2.id,
+    }
+  })
+
+  await prisma.productionSchedule.create({
+    data: {
+      productionJobId: job2.id,
+      machineId: machine2.id,
+      scheduledDate: new Date(),
+      priority: 'URGENT'
+    }
+  })
+
+  console.log('====================================================')
+  console.log('Seeding Selesai! Semua modul telah terisi data awal.')
+  console.log('Gunakan email berikut untuk login (Password: password123):')
+  console.log(`- Owner/Manager : ${management.email}`)
+  console.log(`- Admin Kasir   : ${admin.email}`)
+  console.log(`- Operator Mesin: ${operator1.email}`)
+  console.log(`- Pelanggan     : ${customer1.email}`)
+  console.log('====================================================')
 }
 
 main()

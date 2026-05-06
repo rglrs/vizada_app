@@ -21,24 +21,20 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
     if (session?.user?.role !== "ADMIN" && session?.user?.role !== "MANAGEMENT") {
       return { error: "Anda tidak memiliki akses untuk mengubah status pesanan" }
     }
-
     const order = await prisma.order.findUnique({ where: { id: orderId } })
-    if (!order) return { error: "Pesanan tidak ditemukan" }
-
+    if (!order) {
+      return { error: "Pesanan tidak ditemukan" }
+    }
     const allowedNextStatuses = validTransitions[order.status] || []
-    
     if (!allowedNextStatuses.includes(newStatus)) {
       return { error: `Perubahan status ilegal. Tidak bisa merubah dari ${order.status} ke ${newStatus}` }
     }
-
     await prisma.order.update({
       where: { id: orderId },
       data: { status: newStatus }
     })
-
     revalidatePath("/admin/orders")
     revalidatePath(`/admin/orders/${orderId}`)
-    
     return { success: true }
   } catch {
     return { error: "Terjadi kesalahan saat memperbarui status" }

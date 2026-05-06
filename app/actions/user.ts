@@ -12,18 +12,14 @@ export async function createUser(formData: FormData) {
     const phone = formData.get("phone") as string
     const role = formData.get("role") as Role
     const password = formData.get("password") as string
-
     if (!name || !email || !password) {
       return { error: "Nama, email, dan password wajib diisi." }
     }
-
     const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) {
       return { error: "Email sudah terdaftar." }
     }
-
     const passwordHash = await hash(password, 10)
-
     await prisma.user.create({
       data: {
         name,
@@ -33,7 +29,6 @@ export async function createUser(formData: FormData) {
         passwordHash,
       }
     })
-
     revalidatePath("/admin/users")
     return { success: true }
   } catch {
@@ -48,27 +43,22 @@ export async function updateUser(id: string, formData: FormData) {
     const phone = formData.get("phone") as string
     const role = formData.get("role") as Role
     const password = formData.get("password") as string
-
     if (!name || !email) {
       return { error: "Nama dan email wajib diisi." }
     }
-
     const dataToUpdate: { name: string; email: string; phone: string | null; role: Role; passwordHash?: string } = {
       name,
       email,
       phone: phone || null,
       role
     }
-
     if (password) {
       dataToUpdate.passwordHash = await hash(password, 10)
     }
-
     await prisma.user.update({
       where: { id },
       data: dataToUpdate
     })
-
     revalidatePath("/admin/users")
     return { success: true }
   } catch {

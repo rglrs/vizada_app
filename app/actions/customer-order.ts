@@ -11,21 +11,22 @@ export async function cancelOrder(orderId: string) {
     if (!session?.user?.id) {
       return { error: "Anda tidak memiliki akses" }
     }
-
     const order = await prisma.order.findUnique({ where: { id: orderId } })
-    
-    if (!order) return { error: "Pesanan tidak ditemukan" }
-    if (order.customerId !== session.user.id) return { error: "Anda tidak memiliki izin" }
-    if (order.status !== "PENDING_PAYMENT") return { error: "Pesanan yang sudah diproses tidak dapat dibatalkan" }
-
+    if (!order) {
+      return { error: "Pesanan tidak ditemukan" }
+    }
+    if (order.customerId !== session.user.id) {
+      return { error: "Anda tidak memiliki izin" }
+    }
+    if (order.status !== "PENDING_PAYMENT") {
+      return { error: "Pesanan yang sudah diproses tidak dapat dibatalkan" }
+    }
     await prisma.order.update({
       where: { id: orderId },
       data: { status: "CANCELLED" }
     })
-
     revalidatePath(`/orders/${orderId}`)
     revalidatePath("/orders")
-    
     return { success: true }
   } catch {
     return { error: "Gagal membatalkan pesanan" }
