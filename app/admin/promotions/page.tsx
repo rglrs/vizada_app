@@ -2,11 +2,11 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tag } from "lucide-react"
-import { CreatePromotionModal, EditPromotionModal, DeletePromotionModal } from "./promotion-modals"
+import { CreatePromotionModal, EditPromotionModal, DeletePromotionModal, ManageVoucherModal } from "./promotion-modals"
 
 export default async function PromotionPage() {
   const promotions = await prisma.promotion.findMany({
-    include: { vouchers: { take: 1 } },
+    include: { vouchers: true }, // MENGAMBIL SEMUA KODE VOUCHER
     orderBy: { createdAt: "desc" }
   })
 
@@ -76,6 +76,8 @@ export default async function PromotionPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-right space-x-2">
+                          {/* TOMBOL MANAGE VOUCHER */}
+                          <ManageVoucherModal promo={promo} vouchers={promo.vouchers} />
                           <EditPromotionModal promo={promo} />
                           <DeletePromotionModal promoId={promo.id} />
                         </TableCell>
