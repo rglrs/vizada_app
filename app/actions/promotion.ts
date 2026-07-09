@@ -211,3 +211,36 @@ export async function deleteBundle(id: string) {
     return { error: "Gagal menghapus bundle produk" }
   }
 }
+
+// ----------------------------------------
+// FITUR BARU: Buat Kode Custom & Hapus Kode
+// ----------------------------------------
+
+export async function createCustomVoucher(promotionId: string, customCode: string) {
+  if (!customCode || customCode.trim() === "") return { error: "Kode voucher tidak boleh kosong" }
+  try {
+    const existing = await prisma.voucherCode.findUnique({ where: { code: customCode.toUpperCase() } })
+    if (existing) return { error: "Kode voucher ini sudah digunakan" }
+
+    await prisma.voucherCode.create({
+      data: {
+        code: customCode.toUpperCase(),
+        promotionId
+      }
+    })
+    revalidatePath("/admin/promotions")
+    return { success: true }
+  } catch {
+    return { error: "Gagal membuat kode voucher" }
+  }
+}
+
+export async function deleteVoucherCode(id: string) {
+  try {
+    await prisma.voucherCode.delete({ where: { id } })
+    revalidatePath("/admin/promotions")
+    return { success: true }
+  } catch {
+    return { error: "Gagal menghapus kode voucher" }
+  }
+}

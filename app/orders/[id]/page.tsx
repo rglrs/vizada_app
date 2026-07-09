@@ -8,6 +8,7 @@ import Link from "next/link"
 import { ArrowLeft, CheckCircle2, Clock, CreditCard, Printer, PackageCheck, XCircle } from "lucide-react"
 import { PaymentModal } from "./payment-modal"
 import { CancelButton } from "./cancel-button"
+import { VoucherInput } from "./voucher-input"
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -23,6 +24,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   })
 
   if (!order) redirect("/products")
+
+  const promoUsage = await prisma.promoUsage.findFirst({
+    where: { orderId: order.id }
+  })
+
+  const discountAmount = promoUsage?.discountAmount || 0
+  const finalTotal = order.totalAmount - discountAmount
 
   const formatRupiah = (price: number) => {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(price)
@@ -115,10 +123,29 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 </div>
               ))}
             </div>
-            <div className="flex justify-between items-center bg-primary/5 p-4 rounded-lg mt-2 border border-primary/10">
-              <span className="font-bold text-lg">Total Pembayaran</span>
-              <span className="font-extrabold text-2xl text-primary">{formatRupiah(order.totalAmount)}</span>
+            
+            <div className="space-y-2 mt-4 pt-4 border-t border-dashed">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="font-medium">{formatRupiah(order.totalAmount)}</span>
+              </div>
+              
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center text-sm text-green-600">
+                  <span>Diskon Voucher</span>
+                  <span className="font-bold">- {formatRupiah(discountAmount)}</span>
+                </div>
+              )}
             </div>
+
+            <div className="flex justify-between items-center bg-primary/5 p-4 rounded-lg mt-4 border border-primary/10">
+              <span className="font-bold text-lg">Total Pembayaran</span>
+              <span className="font-extrabold text-2xl text-primary">{formatRupiah(finalTotal)}</span>
+            </div>
+
+            {order.status === "PENDING_PAYMENT" && discountAmount === 0 && (
+              <VoucherInput orderId={order.id} />
+            )}
           </div>
         </CardContent>
 
