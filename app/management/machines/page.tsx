@@ -2,12 +2,11 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Wrench } from "lucide-react"
-import { CreateMachineModal, EditMachineModal, DeleteMachineModal } from "./machine-modals"
+import { CreateMachineModal, EditMachineModal, DeleteMachineModal, LogMaintenanceModal, ScheduleMaintenanceModal } from "./machine-modals"
 
 export default async function MachinePage() {
   const machines = await prisma.machine.findMany({
     include: {
-      productionJobs: { where: { status: { not: "DONE" } } },
       maintenanceLogs: { orderBy: { createdAt: "desc" }, take: 1 },
       schedules: { orderBy: { nextDue: "asc" }, take: 1 }
     },
@@ -43,10 +42,10 @@ export default async function MachinePage() {
                   <TableRow>
                     <TableHead>Nama Mesin</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Job Aktif</TableHead>
                     <TableHead>Perawatan Terakhir</TableHead>
                     <TableHead>Jadwal Perawatan</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
+                    <TableHead className="text-right">Aksi Data</TableHead>
+                    <TableHead className="text-right">Perawatan</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -64,7 +63,6 @@ export default async function MachinePage() {
                           {machine.status === "AVAILABLE" ? "Tersedia" : machine.status === "IN_USE" ? "Digunakan" : "Maintenance"}
                         </span>
                       </TableCell>
-                      <TableCell>{machine.productionJobs.length}</TableCell>
                       <TableCell>
                         {machine.maintenanceLogs.length > 0
                           ? new Date(machine.maintenanceLogs[0].createdAt).toLocaleDateString("id-ID")
@@ -78,6 +76,10 @@ export default async function MachinePage() {
                       <TableCell className="text-right space-x-2">
                         <EditMachineModal machine={machine} />
                         <DeleteMachineModal machineId={machine.id} />
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <LogMaintenanceModal machineId={machine.id} />
+                        <ScheduleMaintenanceModal machineId={machine.id} />
                       </TableCell>
                     </TableRow>
                   ))}

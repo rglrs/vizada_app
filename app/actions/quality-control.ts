@@ -26,6 +26,21 @@ export async function submitQCCheck(formData: FormData) {
     } else if (statuses.includes(QCChecklistStatus.NEEDS_REWORK)) {
       overallStatus = QCChecklistStatus.NEEDS_REWORK
     }
+    
+    const job = await prisma.productionJob.findUnique({
+      where: { id: productionJobId },
+      include: {
+        orderItem: {
+          include: {
+            order: true,
+            product: { include: { materials: true } }
+          }
+        }
+      }
+    })
+    
+    if (!job) return { error: "Pekerjaan produksi tidak ditemukan" }
+
     await prisma.$transaction(async (tx) => {
       await Promise.all(
         checklist.map(item =>
@@ -39,10 +54,46 @@ export async function submitQCCheck(formData: FormData) {
           })
         )
       )
+      
       await tx.productionJob.update({
         where: { id: productionJobId },
-        data: { status: "QC_CHECK" }
+        data: { 
+          status: overallStatus === QCChecklistStatus.PASSED ? "DONE" : "QUEUE" 
+        }
       })
+      
+      if (overallStatus === QCChecklistStatus.PASSED) {
+        for (const bom of job.orderItem.product.materials) {
+          const totalNeeded = bom.qtyNeeded * job.orderItem.qty
+          await tx.material.update({
+            where: { id: bom.materialId },
+            data: { stockQty: { decrement: totalNeeded } }
+          })
+          await tx.inventoryLog.create({
+            data: {
+              materialId: bom.materialId,
+              type: "OUT",
+              qty: totalNeeded,
+              notes: `Otomatis: QC Lolos Order ${job.orderItem.order.orderNumber} (${job.orderItem.product.name})`
+            }
+          })
+        }
+        
+        const otherJobs = await tx.productionJob.findMany({
+          where: { 
+            orderItem: { orderId: job.orderItem.orderId },
+            id: { not: productionJobId }
+          }
+        })
+        
+        const allDone = otherJobs.every(j => j.status === "DONE")
+        if (allDone || otherJobs.length === 0) {
+          await tx.order.update({
+            where: { id: job.orderItem.orderId },
+            data: { status: "READY_FOR_PICKUP" }
+          })
+        }
+      }
     })
     revalidatePath("/operator/quality-control")
     return { success: true, overallStatus, notes }
