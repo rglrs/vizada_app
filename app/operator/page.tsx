@@ -1,11 +1,11 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@/app/generated/prisma/client"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Printer, Calendar, StickyNote, DownloadCloud, AlertCircle } from "lucide-react"
+import { Printer, Calendar, StickyNote, DownloadCloud, AlertCircle, Clock, AlertTriangle } from "lucide-react"
 import { ProductionButton } from "./production-button"
+import { DataFilter } from "@/components/data-filter"
 
 type PageProps = {
   searchParams: Promise<{ q?: string; page?: string; limit?: string }> | { q?: string; page?: string; limit?: string }
@@ -35,7 +35,12 @@ export default async function ProductionQueuePage({ searchParams }: PageProps) {
       skip,
       take: limit,
       include: {
-        items: { include: { product: true } },
+        items: { 
+          include: { 
+            product: true,
+            productionJob: true
+          } 
+        },
         customer: true
       }
     }),
@@ -51,19 +56,16 @@ export default async function ProductionQueuePage({ searchParams }: PageProps) {
         <p className="text-muted-foreground mt-1">Daftar pesanan yang harus segera dicetak oleh operator mesin.</p>
       </div>
 
-      <form method="GET" className="flex flex-col sm:flex-row gap-2">
-        <Input name="q" defaultValue={q} placeholder="Cari invoice atau nama..." className="sm:max-w-[300px]" />
-        <select
-          name="limit"
-          defaultValue={limit.toString()}
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="10">10 data per halaman</option>
-          <option value="25">25 data per halaman</option>
-          <option value="50">50 data per halaman</option>
-        </select>
-        <Button type="submit" variant="secondary">Cari</Button>
-      </form>
+      <DataFilter 
+        searchPlaceholder="Cari invoice atau nama..." 
+        defaultQuery={q} 
+        defaultLimit={limit} 
+        limitOptions={[
+          { label: "10 data per halaman", value: 10 },
+          { label: "25 data per halaman", value: 25 },
+          { label: "50 data per halaman", value: 50 },
+        ]}
+      />
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-xl bg-muted/20">
@@ -74,12 +76,28 @@ export default async function ProductionQueuePage({ searchParams }: PageProps) {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {orders.map((order) => (
-              <Card key={order.id} className="flex flex-col border-t-4 border-t-purple-500 shadow-md">
+            {orders.map((order) => {
+              const allInQC = order.items.length > 0 && order.items.every(item => item.productionJob?.status === "QC_CHECK" || item.productionJob?.status === "DONE")
+              const hasRework = order.items.some(item => item.productionJob?.notes && item.productionJob?.status === "QUEUE")
+
+              return (
+              <Card key={order.id} className={`flex flex-col border-t-4 shadow-xs hover-lift rounded-2xl border border-border/70 transition-all duration-300 ${hasRework ? "border-t-amber-500" : allInQC ? "border-t-sky-500 opacity-90" : "border-t-indigo-600"}`}>
                 <CardHeader className="pb-3 bg-muted/10">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-xl font-bold">{order.orderNumber}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-xl font-bold">{order.orderNumber}</CardTitle>
+                        {allInQC && (
+                          <span className="bg-blue-100 text-blue-800 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> Di QC
+                          </span>
+                        )}
+                        {hasRework && (
+                          <span className="bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" /> Revisi QC
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm font-medium text-muted-foreground mt-1">{order.customer.name}</p>
                     </div>
                     {order.deadline && (
@@ -93,25 +111,52 @@ export default async function ProductionQueuePage({ searchParams }: PageProps) {
                 
                 <CardContent className="flex-1 py-4 space-y-4">
                   {order.items.map((item) => {
-                    const specs = item.specifications as { notes?: string } | null
+                    const specs = item.specifications as { notes?: string; designMode?: "TEMPLATE" | "CUSTOM"; templateTitle?: string } | null
                     
                     return (
                       <div key={item.id} className="space-y-3">
                         <div className="flex justify-between items-start border-b pb-3">
                           <div>
                             <p className="font-bold text-lg">{item.product.name}</p>
-                            <p className="text-sm font-medium text-muted-foreground mt-0.5">
-                              Jumlah: <span className="text-foreground">{item.qty} {item.product.unit}</span>
-                            </p>
+                            <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                              <p className="text-sm font-medium text-muted-foreground">
+                                Jumlah: <span className="text-foreground font-bold">{item.qty} {item.product.unit}</span>
+                              </p>
+                              {specs?.designMode === "TEMPLATE" ? (
+                                <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                  🎨 {specs.templateTitle || "Desain Bawaan"}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                  📤 Custom Desain
+                                </span>
+                              )}
+                              {item.productionJob?.status === "QC_CHECK" && (
+                                <span className="inline-flex items-center rounded-md bg-sky-50 dark:bg-sky-950/40 px-2 py-0.5 text-xs font-bold text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800">
+                                  🔍 Antrean QC
+                                </span>
+                              )}
+                            </div>
                           </div>
                           {item.fileUrl && (
-                            <a href={item.fileUrl} download target="_blank" rel="noreferrer">
+                            <a href={item.fileUrl} download target="_blank" rel="noreferrer" title="Unduh File Desain">
                               <Button size="icon" variant="secondary" className="h-10 w-10 shrink-0 rounded-full">
                                 <DownloadCloud className="h-5 w-5 text-primary" />
                               </Button>
                             </a>
                           )}
                         </div>
+
+                        {item.productionJob?.notes && item.productionJob?.status === "QUEUE" && (
+                          <div className="bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-300 dark:border-red-900">
+                            <p className="text-xs font-bold text-red-800 dark:text-red-400 flex items-center gap-1.5 mb-1">
+                              <AlertTriangle className="h-3.5 w-3.5" /> Catatan Revisi / Evaluasi QC:
+                            </p>
+                            <p className="text-sm text-red-900 dark:text-red-200 leading-relaxed font-semibold">
+                              {item.productionJob.notes}
+                            </p>
+                          </div>
+                        )}
 
                         {specs?.notes ? (
                           <div className="bg-yellow-50 dark:bg-yellow-950/30 p-3 rounded-md border border-yellow-200 dark:border-yellow-900">
@@ -133,10 +178,16 @@ export default async function ProductionQueuePage({ searchParams }: PageProps) {
                 </CardContent>
                 
                 <CardFooter className="pt-0 pb-5 px-6 mt-auto">
-                  <ProductionButton orderId={order.id} />
+                  {allInQC ? (
+                    <div className="w-full py-2.5 px-4 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-center font-bold text-sm border border-blue-200 dark:border-blue-800 flex items-center justify-center gap-2">
+                      <Clock className="h-4 w-4" /> Sedang Diperiksa Tim QC
+                    </div>
+                  ) : (
+                    <ProductionButton orderId={order.id} />
+                  )}
                 </CardFooter>
               </Card>
-            ))}
+            )})}
           </div>
 
           {totalPages > 1 && (

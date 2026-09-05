@@ -8,10 +8,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { Camera, UploadCloud, X, Loader2 } from "lucide-react"
 
 export function QCForm({ productionJobId }: { productionJobId: string }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [checklist, setChecklist] = useState([
     { name: "Kualitas Warna (Sesuai Proof)", status: "PASSED", notes: "" },
     { name: "Presisi Potongan / Finishing", status: "PASSED", notes: "" },
@@ -25,6 +28,25 @@ export function QCForm({ productionJobId }: { productionJobId: string }) {
     setChecklist(newChecklist)
   }
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Ukuran file foto maksimal 5MB")
+        return
+      }
+      setPhotoFile(file)
+      const url = URL.createObjectURL(file)
+      setPhotoPreview(url)
+    }
+  }
+
+  const removePhoto = () => {
+    setPhotoFile(null)
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhotoPreview(null)
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -33,6 +55,9 @@ export function QCForm({ productionJobId }: { productionJobId: string }) {
     formData.append("productionJobId", productionJobId)
     formData.append("checklist", JSON.stringify(checklist))
     formData.append("notes", generalNotes)
+    if (photoFile) {
+      formData.append("photo", photoFile)
+    }
 
     const result = await submitQCCheck(formData)
     setLoading(false)
@@ -40,7 +65,7 @@ export function QCForm({ productionJobId }: { productionJobId: string }) {
     if (result.error) {
       toast.error(result.error)
     } else {
-      toast.success("Hasil Quality Control berhasil disimpan!")
+      toast.success("Hasil Quality Control & foto bukti berhasil disimpan!")
       router.push("/operator/quality-control")
     }
   }
@@ -86,6 +111,41 @@ export function QCForm({ productionJobId }: { productionJobId: string }) {
           </div>
 
           <div className="space-y-2">
+            <label className="font-medium text-sm flex items-center gap-1.5">
+              <Camera className="h-4 w-4 text-primary" /> Foto Bukti Hasil Cetak (Opsional)
+            </label>
+            {photoPreview ? (
+              <div className="relative w-40 h-40 rounded-lg overflow-hidden border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photoPreview} alt="Preview QC" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={removePhoto}
+                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-28 px-4 transition bg-muted/10 border border-dashed rounded-lg border-muted-foreground/30 hover:bg-muted/20 hover:border-primary/50 cursor-pointer">
+                <div className="flex flex-col items-center justify-center">
+                  <UploadCloud className="w-6 h-6 mb-1 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">Klik untuk upload foto QC</span> (JPG / PNG max 5MB)
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  className="hidden"
+                  onChange={handlePhotoChange}
+                  disabled={loading}
+                />
+              </label>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <label className="font-medium text-sm">Catatan Keseluruhan (Opsional)</label>
             <Textarea 
               placeholder="Berikan ringkasan jika ada hal yang perlu diperhatikan..."
@@ -95,7 +155,13 @@ export function QCForm({ productionJobId }: { productionJobId: string }) {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Menyimpan..." : "Simpan Hasil QC"}
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menyimpan Hasil QC...
+              </>
+            ) : (
+              "Simpan Hasil QC"
+            )}
           </Button>
         </form>
       </CardContent>

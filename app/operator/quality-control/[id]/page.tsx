@@ -19,7 +19,8 @@ export default async function QCDetailPage({ params }: PageProps) {
           product: true
         }
       },
-      qcItems: true
+      qcItems: true,
+      photos: true
     }
   })
 
@@ -64,6 +65,20 @@ export default async function QCDetailPage({ params }: PageProps) {
               )}
             </div>
           </div>
+
+          {job.photos && job.photos.length > 0 && (
+            <div className="bg-muted/30 p-5 rounded-xl border space-y-3">
+              <h4 className="font-semibold text-sm">Foto Bukti Sebelumnya</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {job.photos.map((photo) => (
+                  <a key={photo.id} href={photo.photoUrl} target="_blank" rel="noreferrer" className="block relative aspect-square rounded-lg overflow-hidden border bg-background hover:opacity-90">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.photoUrl} alt="Foto QC" className="w-full h-full object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="md:col-span-2">

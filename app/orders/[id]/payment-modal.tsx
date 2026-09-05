@@ -8,19 +8,31 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { CreditCard, Loader2, UploadCloud, Landmark, FileImage } from "lucide-react"
+import { CreditCard, Loader2, UploadCloud, Landmark, FileImage, Clock, CheckCircle2 } from "lucide-react"
 
 export function PaymentModal({ orderId, status }: { orderId: string, status: string }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [fileName, setFileName] = useState<string>("")
 
-  if (status !== "PENDING_PAYMENT") {
+  if (status === "WAITING_APPROVAL") {
     return (
-      <Button className="w-full h-10 text-sm font-semibold rounded-lg" disabled variant="secondary">
-        Menunggu Konfirmasi Admin
-      </Button>
+      <div className="w-full h-11 flex items-center justify-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-sm font-semibold">
+        <Clock className="h-4 w-4" /> Bukti Pembayaran Sedang Diverifikasi Admin
+      </div>
     )
+  }
+
+  if (status === "IN_PRODUCTION" || status === "READY_FOR_PICKUP" || status === "COMPLETED") {
+    return (
+      <div className="w-full h-11 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-sm font-semibold">
+        <CheckCircle2 className="h-4 w-4" /> Pembayaran Terverifikasi (Lunas)
+      </div>
+    )
+  }
+
+  if (status !== "PENDING_PAYMENT") {
+    return null
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -113,7 +125,15 @@ export function PaymentModal({ orderId, status }: { orderId: string, status: str
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   onChange={(e) => {
                     const file = e.target.files?.[0]
-                    if (file) setFileName(file.name)
+                    if (file) {
+                      if (file.size > 5 * 1024 * 1024) {
+                        toast.error("Ukuran bukti transfer melebihi batas maksimal 5MB! Silakan gunakan file yang lebih kecil.")
+                        e.target.value = ""
+                        setFileName("")
+                        return
+                      }
+                      setFileName(file.name)
+                    }
                   }}
                 />
               </div>

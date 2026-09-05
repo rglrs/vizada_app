@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -101,9 +102,9 @@ export default async function QualityControlPage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <a href={`/operator/quality-control/${job.id}`} className="text-blue-600 hover:underline text-sm">
+                        <Link href={`/operator/quality-control/${job.id}`} className="text-blue-600 hover:underline text-sm font-medium">
                           Lihat Detail
-                        </a>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))}

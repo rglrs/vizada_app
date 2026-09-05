@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Wrench } from "lucide-react"
 import { CreateMachineModal, EditMachineModal, DeleteMachineModal, LogMaintenanceModal, ScheduleMaintenanceModal } from "./machine-modals"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 export default async function MachinePage() {
   const machines = await prisma.machine.findMany({
@@ -53,15 +54,7 @@ export default async function MachinePage() {
                     <TableRow key={machine.id}>
                       <TableCell className="font-medium">{machine.name}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          machine.status === "AVAILABLE"
-                            ? "bg-green-100 text-green-800"
-                            : machine.status === "IN_USE"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {machine.status === "AVAILABLE" ? "Tersedia" : machine.status === "IN_USE" ? "Digunakan" : "Maintenance"}
-                        </span>
+                        <StatusBadge status={machine.status} size="sm" />
                       </TableCell>
                       <TableCell>
                         {machine.maintenanceLogs.length > 0

@@ -32,6 +32,11 @@ export async function uploadPaymentProof(formData: FormData) {
     if (!order) {
       return { error: "Pesanan tidak ditemukan" }
     }
+    const promoUsage = await prisma.promoUsage.findFirst({
+      where: { orderId }
+    })
+    const finalAmount = Math.max(0, order.totalAmount - (promoUsage?.discountAmount || 0))
+
     const buffer = Buffer.from(await file.arrayBuffer())
     const uploadDir = join(process.cwd(), "public", "uploads", "payments")
     if (!existsSync(uploadDir)) {
@@ -42,10 +47,18 @@ export async function uploadPaymentProof(formData: FormData) {
     const filePath = join(uploadDir, fileName)
     await writeFile(filePath, buffer)
     const proofUrl = `/uploads/payments/${fileName}`
-    await prisma.payment.create({
-      data: {
+
+    await prisma.payment.upsert({
+      where: { orderId },
+      create: {
         orderId,
-        amount: order.totalAmount,
+        amount: finalAmount,
+        method,
+        status: "PENDING",
+        proofUrl
+      },
+      update: {
+        amount: finalAmount,
         method,
         status: "PENDING",
         proofUrl

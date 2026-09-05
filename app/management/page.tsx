@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DollarSign, Package, Printer, Users, ArrowRight, AlertTriangle, TrendingUp } from "lucide-react"
+import { DollarSign, Package, Printer, Users, ArrowRight, AlertTriangle, TrendingUp, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { ExportButton } from "./export-button"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 export default async function ManagementDashboardPage() {
   const [totalOrders, activeProduction, totalCustomers, revenueAgg, recentOrders, allMaterials, ordersLast7Days, allOrdersExport] = await Promise.all([
@@ -56,160 +56,196 @@ export default async function ManagementDashboardPage() {
 
   const maxChartValue = Math.max(...chartData.map(d => d.total), 1)
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "PENDING_PAYMENT": return <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-xs font-bold">Menunggu Pembayaran</span>
-      case "WAITING_APPROVAL": return <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-bold">Menunggu Persetujuan</span>
-      case "IN_PRODUCTION": return <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-xs font-bold">Sedang Diproduksi</span>
-      case "READY_FOR_PICKUP": return <span className="bg-teal-100 text-teal-800 px-2 py-1 rounded-md text-xs font-bold">Siap Diambil</span>
-      case "COMPLETED": return <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-bold">Selesai</span>
-      case "CANCELLED": return <span className="bg-red-100 text-red-800 px-2 py-1 rounded-md text-xs font-bold">Dibatalkan</span>
-      default: return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-xs font-bold">{status}</span>
-    }
-  }
-
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-border/60">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard Utama</h1>
-          <p className="text-muted-foreground mt-1">Ringkasan performa dan aktivitas percetakan Vizada.</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Dashboard Eksekutif</h1>
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Data
+            </span>
+          </div>
+          <p className="text-muted-foreground text-sm mt-1">Ringkasan performa finansial, utilisasi mesin, dan aktivitas pesanan Vizada.</p>
         </div>
         <ExportButton data={allOrdersExport} />
       </div>
 
+      {/* Warning Stok Bahan */}
       {lowStockItems.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+        <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-2xl shadow-xs backdrop-blur-xs">
           <div className="flex items-start">
-            <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 mr-3 shrink-0" />
-            <div>
-              <h3 className="text-red-800 dark:text-red-400 font-bold">Peringatan Stok Menipis</h3>
-              <p className="text-red-700 dark:text-red-300 text-sm mt-1">
-                Terdapat {lowStockItems.length} bahan baku yang mencapai batas minimum. Segera lakukan restock.
+            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-600 mr-3 shrink-0">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-rose-700 dark:text-rose-400 font-bold text-sm">Peringatan Inventaris: Stok Menipis</h3>
+              <p className="text-rose-600/90 dark:text-rose-300/90 text-xs mt-0.5">
+                Terdapat {lowStockItems.length} bahan baku yang telah menyentuh batas minimum persediaan. Segera lakukan pengadaan.
               </p>
-              <Link href="/management/inventory" className="text-red-600 font-bold text-sm mt-2 inline-flex items-center hover:underline">
-                Lihat Detail Inventaris <ArrowRight className="h-3 w-3 ml-1" />
+              <Link href="/management/inventory" className="text-rose-700 dark:text-rose-300 font-bold text-xs mt-2 inline-flex items-center hover:underline">
+                Buka Manajemen Inventaris <ArrowRight className="h-3 w-3 ml-1" />
               </Link>
             </div>
           </div>
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-0 shadow-sm bg-blue-50/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800">Total Pendapatan</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-black text-blue-900">{formatRupiah(totalRevenue)}</div>
-            <p className="text-xs text-blue-600/80 mt-1">Dari pesanan yang diproses</p>
-          </CardContent>
-        </Card>
+      {/* 4 Executive Metric Widgets */}
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        {/* Metric 1 */}
+        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Pendapatan</span>
+            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 text-white shadow-md shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+              <DollarSign className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-black text-foreground">{formatRupiah(totalRevenue)}</div>
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-emerald-600">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Pendapatan sah terverifikasi</span>
+            </div>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-sm bg-purple-50/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800">Sedang Diproduksi</CardTitle>
-            <Printer className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-black text-purple-900">{activeProduction}</div>
-            <p className="text-xs text-purple-600/80 mt-1">Pesanan di ruang mesin</p>
-          </CardContent>
-        </Card>
+        {/* Metric 2 */}
+        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sedang Diproduksi</span>
+            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white shadow-md shadow-purple-500/20 group-hover:scale-110 transition-transform">
+              <Printer className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-black text-foreground">{activeProduction} Pesanan</div>
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-indigo-600">
+              <span className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+              <span>Di ruang mesin & QC</span>
+            </div>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-sm bg-green-50/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Total Pesanan</CardTitle>
-            <Package className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-black text-green-900">{totalOrders}</div>
-            <p className="text-xs text-green-600/80 mt-1">Keseluruhan pesanan masuk</p>
-          </CardContent>
-        </Card>
+        {/* Metric 3 */}
+        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Pesanan</span>
+            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+              <Package className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-black text-foreground">{totalOrders} Transaksi</div>
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-muted-foreground">
+              <span>Keseluruhan siklus order</span>
+            </div>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-sm bg-orange-50/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-orange-800">Total Pelanggan</CardTitle>
-            <Users className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-black text-orange-900">{totalCustomers}</div>
-            <p className="text-xs text-orange-600/80 mt-1">Akun terdaftar di sistem</p>
-          </CardContent>
-        </Card>
+        {/* Metric 4 */}
+        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pelanggan Aktif</span>
+            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20 group-hover:scale-110 transition-transform">
+              <Users className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-black text-foreground">{totalCustomers} Akun</div>
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-muted-foreground">
+              <span>Customer terdaftar</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-7">
-        <Card className="border-0 shadow-sm md:col-span-4 lg:col-span-5">
-          <CardHeader className="flex flex-row items-center justify-between">
+      {/* Main Charts & Recent Orders Grid */}
+      <div className="grid gap-6 md:grid-cols-7 items-start">
+        {/* Table Transaksi Terbaru */}
+        <div className="rounded-2xl bg-card border border-border/70 shadow-xs md:col-span-4 lg:col-span-5 overflow-hidden">
+          <div className="p-6 flex flex-row items-center justify-between border-b border-border/70">
             <div>
-              <CardTitle>Transaksi Terbaru</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">5 pesanan terakhir yang masuk ke sistem.</p>
+              <h2 className="text-base font-bold text-foreground">Transaksi Pesanan Terbaru</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">5 pesanan terakhir yang masuk ke alur produksi.</p>
             </div>
-            <Link href="/admin/orders" className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-muted h-9 px-4 py-2 gap-1">
-              Lihat Semua <ArrowRight className="h-4 w-4" />
+            <Link href="/admin/orders" className="inline-flex items-center justify-center rounded-xl text-xs font-semibold hover:bg-muted text-primary h-8 px-3 gap-1 transition-colors">
+              Lihat Semua <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-2">
             {recentOrders.length === 0 ? (
-              <div className="text-center py-6 text-muted-foreground">Belum ada data transaksi.</div>
+              <div className="text-center py-10 text-muted-foreground text-sm">Belum ada data transaksi.</div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>No. Invoice</TableHead>
-                      <TableHead>Pelanggan</TableHead>
-                      <TableHead>Layanan</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Status</TableHead>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="text-xs font-bold">No. Invoice</TableHead>
+                      <TableHead className="text-xs font-bold">Pelanggan</TableHead>
+                      <TableHead className="text-xs font-bold">Layanan</TableHead>
+                      <TableHead className="text-xs font-bold">Nominal</TableHead>
+                      <TableHead className="text-xs font-bold">Status Pengerjaan</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {recentOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                        <TableCell>{order.customer.name}</TableCell>
-                        <TableCell className="max-w-37.5 truncate">{order.items[0]?.product.name}</TableCell>
-                        <TableCell className="font-semibold">{formatRupiah(order.totalAmount)}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
+                        <TableCell className="font-bold text-xs text-primary">{order.orderNumber}</TableCell>
+                        <TableCell className="text-xs font-medium">{order.customer.name}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
+                          {order.items[0]?.product.name || "Layanan Cetak"}
+                        </TableCell>
+                        <TableCell className="font-bold text-xs">{formatRupiah(order.totalAmount)}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={order.status} size="sm" />
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-sm md:col-span-3 lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" /> Pendapatan 7 Hari
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex h-62.5 items-end gap-2 pt-6">
+        {/* 7-Day Revenue Bar Chart */}
+        <div className="rounded-2xl bg-card border border-border/70 shadow-xs md:col-span-3 lg:col-span-2 p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-4 border-b border-border/70">
+              <div className="flex items-center gap-2 font-bold text-sm text-foreground">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span>Tren Omzet 7 Hari</span>
+              </div>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Harian</span>
+            </div>
+
+            <div className="flex h-56 items-end gap-2.5 pt-8 px-1">
               {chartData.map((data, idx) => {
                 const heightPercentage = (data.total / maxChartValue) * 100
                 return (
-                  <div key={idx} className="relative flex w-full flex-col items-center justify-end group">
+                  <div key={idx} className="relative flex w-full flex-col items-center justify-end group h-full">
                     <div 
-                      className="w-full rounded-t-md bg-primary/20 transition-all duration-500 group-hover:bg-primary" 
-                      style={{ height: `${heightPercentage}%`, minHeight: '4px' }}
-                    ></div>
-                    <span className="mt-2 text-[10px] text-muted-foreground font-medium uppercase">{data.label}</span>
-                    <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-foreground text-background text-xs font-bold py-1 px-2 rounded pointer-events-none whitespace-nowrap z-10">
+                      className="w-full rounded-t-lg bg-gradient-to-t from-indigo-600/30 to-indigo-600 group-hover:from-indigo-500 group-hover:to-cyan-400 transition-all duration-300 cursor-pointer shadow-xs" 
+                      style={{ height: `${Math.max(heightPercentage, 8)}%` }}
+                    />
+                    <span className="mt-2 text-[10px] text-muted-foreground font-bold uppercase">{data.label}</span>
+                    <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-foreground text-background text-[11px] font-bold py-1 px-2 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-lg">
                       {formatRupiah(data.total)}
                     </div>
                   </div>
                 )
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-border/70 text-center">
+            <span className="text-xs text-muted-foreground">
+              Arahkan kursor ke batang untuk melihat nominal harian
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   )

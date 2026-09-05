@@ -2,7 +2,32 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { QCChecklistStatus, Prisma } from "@/app/generated/prisma/client"
+import { QCChecklistStatus, QCStatus, Prisma } from "@/app/generated/prisma/client"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
+import { existsSync } from "fs"
+
+async function saveQCPhotoFile(file: File): Promise<string | null> {
+  if (!file || file.size === 0) return null
+  const MAX_FILE_SIZE = 5 * 1024 * 1024
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
+  if (file.size > MAX_FILE_SIZE || !ALLOWED_TYPES.includes(file.type)) {
+    return null
+  }
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const uploadDir = join(process.cwd(), "public", "uploads", "qc")
+  if (!existsSync(uploadDir)) {
+    await mkdir(uploadDir, { recursive: true })
+  }
+  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+  const cleanName = file.name.replace(/\s+/g, "-")
+  const fileName = `qc-${uniqueSuffix}-${cleanName}`
+  const filePath = join(uploadDir, fileName)
+  await writeFile(filePath, buffer)
+  return `/uploads/qc/${fileName}`
+}
 
 interface ChecklistItem {
   name: string
@@ -11,9 +36,16 @@ interface ChecklistItem {
 }
 
 export async function submitQCCheck(formData: FormData) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return { error: "Anda harus login untuk melakukan inspeksi QC" }
+  }
+
   const productionJobId = formData.get("productionJobId") as string
   const checklistJson = formData.get("checklist") as string
   const notes = formData.get("notes") as string
+  const photoFile = formData.get("photo") as File | null
+
   if (!productionJobId) {
     return { error: "Production job wajib diisi" }
   }
@@ -41,6 +73,11 @@ export async function submitQCCheck(formData: FormData) {
     
     if (!job) return { error: "Pekerjaan produksi tidak ditemukan" }
 
+    let photoUrl: string | null = null
+    if (photoFile && photoFile.size > 0) {
+      photoUrl = await saveQCPhotoFile(photoFile)
+    }
+
     await prisma.$transaction(async (tx) => {
       await Promise.all(
         checklist.map(item =>
@@ -55,10 +92,37 @@ export async function submitQCCheck(formData: FormData) {
         )
       )
       
+      await tx.qualityControl.upsert({
+        where: { productionJobId },
+        create: {
+          productionJobId,
+          inspectorId: session.user.id,
+          status: overallStatus as unknown as QCStatus,
+          notes: notes || null
+        },
+        update: {
+          inspectorId: session.user.id,
+          status: overallStatus as unknown as QCStatus,
+          notes: notes || null,
+          checkedAt: new Date()
+        }
+      })
+
+      if (photoUrl) {
+        await tx.photoRecord.create({
+          data: {
+            productionJobId,
+            photoUrl,
+            notes: notes || "Foto bukti inspeksi QC"
+          }
+        })
+      }
+
       await tx.productionJob.update({
         where: { id: productionJobId },
         data: { 
-          status: overallStatus === QCChecklistStatus.PASSED ? "DONE" : "QUEUE" 
+          status: overallStatus === QCChecklistStatus.PASSED ? "DONE" : "QUEUE",
+          notes: overallStatus === QCChecklistStatus.PASSED ? null : (notes || "Perlu perbaikan QC")
         }
       })
       
@@ -95,6 +159,7 @@ export async function submitQCCheck(formData: FormData) {
         }
       }
     })
+    revalidatePath("/operator")
     revalidatePath("/operator/quality-control")
     return { success: true, overallStatus, notes }
   } catch {
@@ -104,10 +169,16 @@ export async function submitQCCheck(formData: FormData) {
 
 export async function uploadQCPhoto(formData: FormData) {
   const productionJobId = formData.get("productionJobId") as string
-  const photoUrl = formData.get("photoUrl") as string
   const notes = formData.get("notes") as string
+  const file = formData.get("file") as File | null
+  let photoUrl = formData.get("photoUrl") as string | null
+
+  if (file && file.size > 0) {
+    photoUrl = await saveQCPhotoFile(file)
+  }
+
   if (!productionJobId || !photoUrl) {
-    return { error: "Production job dan foto wajib diisi" }
+    return { error: "File foto bukti QC wajib diunggah (JPG/PNG max 5MB)" }
   }
   try {
     await prisma.photoRecord.create({

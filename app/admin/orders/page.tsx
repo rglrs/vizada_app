@@ -1,10 +1,10 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { OrderDetailModal } from "./order-detail-modal"
+import { DataFilter } from "@/components/data-filter"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 type PageProps = {
   searchParams: Promise<{ q?: string; page?: string; limit?: string }> | { q?: string; page?: string; limit?: string }
@@ -47,17 +47,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(price)
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "PENDING_PAYMENT": return <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-xs font-bold">Menunggu Pembayaran</span>
-      case "WAITING_APPROVAL": return <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-bold">Menunggu Persetujuan</span>
-      case "IN_PRODUCTION": return <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-xs font-bold">Sedang Diproduksi</span>
-      case "READY_FOR_PICKUP": return <span className="bg-teal-100 text-teal-800 px-2 py-1 rounded-md text-xs font-bold">Siap Diambil</span>
-      case "COMPLETED": return <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-bold">Selesai</span>
-      case "CANCELLED": return <span className="bg-red-100 text-red-800 px-2 py-1 rounded-md text-xs font-bold">Dibatalkan</span>
-      default: return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-xs font-bold">{status}</span>
-    }
-  }
+
 
   return (
     <div className="space-y-6">
@@ -66,19 +56,11 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
         <p className="text-muted-foreground">Pantau dan kelola semua pesanan masuk dari pelanggan.</p>
       </div>
 
-      <form method="GET" className="flex flex-col sm:flex-row gap-2">
-        <Input name="q" defaultValue={q} placeholder="Cari invoice atau nama..." className="sm:max-w-[300px]" />
-        <select
-          name="limit"
-          defaultValue={limit.toString()}
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="10">10 baris data</option>
-          <option value="25">25 baris data</option>
-          <option value="50">50 baris data</option>
-        </select>
-        <Button type="submit" variant="secondary">Cari</Button>
-      </form>
+      <DataFilter 
+        searchPlaceholder="Cari invoice atau nama..." 
+        defaultQuery={q} 
+        defaultLimit={limit} 
+      />
       
       <Card>
         <CardHeader>
@@ -136,7 +118,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                           {order.deadline ? new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(order.deadline) : "-"}
                         </TableCell>
                         <TableCell className="font-semibold">{formatRupiah(order.totalAmount)}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
+                        <TableCell><StatusBadge status={order.status} size="sm" /></TableCell>
                         <TableCell className="text-center">
                           <OrderDetailModal order={formattedOrder} />
                         </TableCell>

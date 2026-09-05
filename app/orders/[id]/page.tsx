@@ -62,18 +62,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </Link>
       </div>
 
-      <Card className="border-0 shadow-xl overflow-hidden">
-        <div className="bg-muted/30 px-6 py-8 border-b text-center">
-          <CardTitle className="text-3xl font-extrabold tracking-tight">Status Pesanan</CardTitle>
-          <CardDescription className="text-base mt-2">
-            Invoice: <span className="font-bold text-foreground">{order.orderNumber}</span>
+      <Card className="border border-border/70 shadow-2xl shadow-indigo-500/5 rounded-3xl overflow-hidden bg-card/90 backdrop-blur-xl">
+        <div className="bg-muted/40 px-6 py-8 border-b border-border/70 text-center relative overflow-hidden">
+          <CardTitle className="text-3xl font-black tracking-tight text-foreground">Status Pengerjaan</CardTitle>
+          <CardDescription className="text-sm mt-1.5 flex items-center justify-center gap-1.5">
+            <span>Invoice:</span> <span className="font-bold text-primary font-mono text-base">{order.orderNumber}</span>
           </CardDescription>
 
           {!isCancelled ? (
-            <div className="relative flex justify-between items-center mt-10 max-w-xl mx-auto px-4">
-              <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1 bg-muted rounded-full z-0"></div>
+            <div className="relative flex justify-between items-center mt-12 max-w-xl mx-auto px-4">
+              <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1.5 bg-muted rounded-full z-0"></div>
               <div 
-                className="absolute left-4 top-1/2 -translate-y-1/2 h-1 bg-primary rounded-full transition-all duration-500 z-0"
+                className="absolute left-4 top-1/2 -translate-y-1/2 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-500 to-cyan-400 rounded-full transition-all duration-700 z-0 shadow-xs"
                 style={{ width: currentStepIndex > 0 ? `calc(${(currentStepIndex / (steps.length - 1)) * 100}% - 2rem)` : '0%' }}
               ></div>
               
@@ -83,13 +83,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 const isActive = currentStepIndex === index
 
                 return (
-                  <div key={step.id} className="relative flex flex-col items-center gap-3 z-10 bg-muted/30 px-1">
-                    <div className={`h-12 w-12 rounded-full flex items-center justify-center border-4 transition-colors ${
-                      isCompleted ? "bg-primary border-primary text-primary-foreground" : "bg-background border-muted-foreground/30 text-muted-foreground"
-                    } ${isActive ? "ring-4 ring-primary/20 scale-110" : ""}`}>
+                  <div key={step.id} className="relative flex flex-col items-center gap-3 z-10 bg-transparent px-1">
+                    <div className={`h-12 w-12 rounded-full flex items-center justify-center border-3 transition-all duration-300 ${
+                      isCompleted 
+                        ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/25" 
+                        : "bg-background border-border text-muted-foreground"
+                    } ${isActive ? "ring-4 ring-primary/30 scale-110 shadow-lg shadow-indigo-500/35 animate-pulse" : ""}`}>
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className={`absolute -bottom-8 w-24 text-center text-[10px] font-bold uppercase tracking-wider ${
+                    <span className={`absolute -bottom-7 w-24 text-center text-[10px] font-bold uppercase tracking-wider ${
                       isCompleted ? "text-foreground" : "text-muted-foreground hidden sm:block"
                     }`}>
                       {step.label}
@@ -113,15 +115,61 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <div className="bg-background p-5 rounded-xl border border-muted-foreground/20 space-y-4 shadow-sm">
             <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-4">Rincian Item</h4>
             <div className="space-y-4">
-              {order.items.map((item) => (
-                <div key={item.id} className="flex justify-between items-start pb-4 border-b last:border-0 last:pb-0">
-                  <div>
-                    <p className="font-bold text-base">{item.product.name}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">{item.qty} {item.product.unit} x {formatRupiah(item.product.basePrice)}</p>
+              {order.items.map((item) => {
+                const specs = item.specifications as { notes?: string; designMode?: "TEMPLATE" | "CUSTOM"; templateTitle?: string } | null
+
+                return (
+                  <div key={item.id} className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
+                    <div className="flex gap-3.5 items-start">
+                      {item.fileUrl && (
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-border/70 bg-muted shrink-0 shadow-xs">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.fileUrl}
+                            alt="Desain"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-bold text-base">{item.product.name}</p>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          {item.qty} {item.product.unit} x {formatRupiah(item.product.basePrice)}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          {specs?.designMode === "TEMPLATE" ? (
+                            <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                              🎨 {specs.templateTitle || "Desain Disediakan"}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                              📤 Custom Desain (Upload Sendiri)
+                            </span>
+                          )}
+
+                          {item.fileUrl && (
+                            <a
+                              href={item.fileUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-primary underline hover:text-primary/80 ml-1"
+                            >
+                              Lihat Desain Full
+                            </a>
+                          )}
+                        </div>
+
+                        {specs?.notes && (
+                          <p className="text-xs text-muted-foreground bg-muted/40 p-2 rounded mt-2 border">
+                            <span className="font-semibold text-foreground">Catatan:</span> {specs.notes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="font-bold text-base whitespace-nowrap self-end sm:self-start">{formatRupiah(item.subtotal)}</span>
                   </div>
-                  <span className="font-semibold">{formatRupiah(item.subtotal)}</span>
-                </div>
-              ))}
+                )
+              })}
             </div>
             
             <div className="space-y-2 mt-4 pt-4 border-t border-dashed">

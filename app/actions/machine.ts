@@ -61,15 +61,39 @@ export async function logMaintenance(formData: FormData) {
     return { error: "Mesin dan tipe perawatan wajib diisi" }
   }
   try {
-    await prisma.machineMaintenanceLog.create({
-      data: {
-        machineId,
-        type,
-        description,
-        cost: isNaN(cost) ? null : cost
+    await prisma.$transaction(async (tx) => {
+      const machine = await tx.machine.findUnique({ where: { id: machineId } })
+      await tx.machineMaintenanceLog.create({
+        data: {
+          machineId,
+          type,
+          description,
+          cost: isNaN(cost) ? null : cost
+        }
+      })
+
+      if (!isNaN(cost) && cost > 0) {
+        let expenseCat = await tx.financialCategory.findFirst({
+          where: { type: "PENGELUARAN", name: { contains: "Maintenance", mode: "insensitive" } }
+        })
+        if (!expenseCat) {
+          expenseCat = await tx.financialCategory.create({
+            data: { name: "Maintenance & Perbaikan", type: "PENGELUARAN" }
+          })
+        }
+        await tx.financialTransaction.create({
+          data: {
+            categoryId: expenseCat.id,
+            type: "PENGELUARAN",
+            amount: cost,
+            description: `Perawatan Mesin ${machine?.name || ""} (${type}): ${description || "Perawatan"}`
+          }
+        })
       }
     })
     revalidatePath("/management/machines")
+    revalidatePath("/management/finance")
+    revalidatePath("/management")
     return { success: true }
   } catch {
     return { error: "Gagal membuat log perawatan" }

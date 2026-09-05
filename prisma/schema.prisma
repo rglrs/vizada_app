@@ -133,12 +133,28 @@ model Product {
   description String?
   basePrice   Float
   unit        String    
+  imageUrl    String?   
   
   category    Category  @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
   
+  // Template desain yang disediakan admin untuk produk ini
+  designs     ProductDesign[]
+  
   // TAMBAHAN: Relasi ke bahan baku (Resep/BOM) untuk pemotongan otomatis
   materials   ProductMaterial[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ProductDesign {
+  id          String    @id @default(uuid())
+  productId   String
+  title       String
+  imageUrl    String
+
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
