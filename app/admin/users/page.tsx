@@ -1,11 +1,11 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
 import { UserActions } from "./user-actions"
+import { DataFilter } from "@/components/data-filter"
 
 type PageProps = {
   searchParams: Promise<{ q?: string; page?: string; limit?: string }> | { q?: string; page?: string; limit?: string }
@@ -51,19 +51,16 @@ export default async function UserManagementPage({ searchParams }: PageProps) {
         </Link>
       </div>
 
-      <form method="GET" className="flex flex-col sm:flex-row gap-2">
-        <Input name="q" defaultValue={q} placeholder="Cari nama atau email..." className="sm:max-w-[300px]" />
-        <select
-          name="limit"
-          defaultValue={limit.toString()}
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="10">10 data per halaman</option>
-          <option value="25">25 data per halaman</option>
-          <option value="50">50 data per halaman</option>
-        </select>
-        <Button type="submit" variant="secondary">Cari</Button>
-      </form>
+      <DataFilter 
+        searchPlaceholder="Cari nama atau email..." 
+        defaultQuery={q} 
+        defaultLimit={limit} 
+        limitOptions={[
+          { label: "10 data per halaman", value: 10 },
+          { label: "25 data per halaman", value: 25 },
+          { label: "50 data per halaman", value: 50 },
+        ]}
+      />
       
       <Card>
         <CardHeader>

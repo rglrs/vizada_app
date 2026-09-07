@@ -15,17 +15,38 @@ export async function createScheduleEntry(formData: FormData) {
     return { error: "Production job dan tanggal wajib diisi" }
   }
   try {
-    await prisma.productionSchedule.create({
-      data: {
-        productionJobId,
-        machineId: machineId || null,
-        operatorId: operatorId || null,
-        scheduledDate,
-        priority,
-        notes
+    await prisma.$transaction(async (tx) => {
+      await tx.productionSchedule.create({
+        data: {
+          productionJobId,
+          machineId: machineId || null,
+          operatorId: operatorId || null,
+          scheduledDate,
+          priority,
+          notes
+        }
+      })
+
+      await tx.productionJob.update({
+        where: { id: productionJobId },
+        data: {
+          machineId: machineId || undefined,
+          operatorId: operatorId || undefined,
+          status: "PRINTING"
+        }
+      })
+
+      if (machineId) {
+        await tx.machine.update({
+          where: { id: machineId },
+          data: { status: "IN_USE" }
+        })
       }
     })
+
     revalidatePath("/management/schedule")
+    revalidatePath("/management/machines")
+    revalidatePath("/operator")
     return { success: true }
   } catch {
     return { error: "Gagal membuat jadwal" }

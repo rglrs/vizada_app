@@ -23,7 +23,7 @@ export default async function CreateOrderPage({
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    include: { category: true }
+    include: { category: true, designs: true }
   })
 
   if (!product) {

@@ -1,12 +1,12 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
 import { ProductActions } from "./product-actions"
 import { CategoryManagement } from "./category-management"
+import { DataFilter } from "@/components/data-filter"
 
 type PageProps = {
   searchParams: Promise<{ q?: string; page?: string; limit?: string }> | { q?: string; page?: string; limit?: string }
@@ -24,7 +24,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const [products, total, categories] = await Promise.all([
     prisma.product.findMany({
       where,
-      include: { category: true },
+      include: { category: true, designs: true },
       orderBy: { createdAt: "desc" },
       skip,
       take: limit
@@ -63,19 +63,11 @@ export default async function ProductsPage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      <form method="GET" className="flex flex-col sm:flex-row gap-2">
-        <Input name="q" defaultValue={q} placeholder="Cari nama produk..." className="sm:max-w-[300px]" />
-        <select
-          name="limit"
-          defaultValue={limit.toString()}
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="10">10 data per baris</option>
-          <option value="25">25 data per baris</option>
-          <option value="50">50 data per baris</option>
-        </select>
-        <Button type="submit" variant="secondary">Cari</Button>
-      </form>
+      <DataFilter 
+        searchPlaceholder="Cari nama produk..." 
+        defaultQuery={q} 
+        defaultLimit={limit} 
+      />
       
       <Card>
         <CardHeader>
@@ -90,8 +82,10 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[80px]">Foto</TableHead>
                   <TableHead>Nama Produk</TableHead>
                   <TableHead>Kategori</TableHead>
+                  <TableHead>Template Desain</TableHead>
                   <TableHead>Harga Dasar</TableHead>
                   <TableHead>Satuan</TableHead>
                   <TableHead className="w-[100px]">Aksi</TableHead>
@@ -100,8 +94,40 @@ export default async function ProductsPage({ searchParams }: PageProps) {
               <TableBody>
                 {products.map((product) => (
                   <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.category.name}</TableCell>
+                    <TableCell>
+                      {product.imageUrl ? (
+                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted border">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-md bg-muted/60 border flex items-center justify-center text-[10px] text-muted-foreground font-medium">
+                          No Image
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <div>
+                        <p className="font-semibold text-foreground">{product.name}</p>
+                        {product.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-1">{product.description}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                        {product.category.name}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {product.designs.length > 0 ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                          {product.designs.length} Desain
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Custom only</span>
+                      )}
+                    </TableCell>
                     <TableCell>{formatRupiah(product.basePrice)}</TableCell>
                     <TableCell>{product.unit}</TableCell>
                     <TableCell>

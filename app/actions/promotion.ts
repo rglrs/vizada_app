@@ -90,12 +90,19 @@ export async function redeemVoucher(code: string, orderId: string) {
       return { error: "Kode voucher sudah digunakan" }
     }
     const promo = voucher.promotion
-    if (new Date() < promo.startDate || new Date() > promo.endDate) {
-      return { error: "Promosi tidak aktif" }
+    if (!promo.active || new Date() < promo.startDate || new Date() > promo.endDate) {
+      return { error: "Promosi tidak aktif atau sudah berakhir" }
     }
     const order = await prisma.order.findUnique({ where: { id: orderId } })
     if (!order) {
       return { error: "Pesanan tidak ditemukan" }
+    }
+    if (order.status !== "PENDING_PAYMENT") {
+      return { error: "Voucher hanya dapat digunakan pada pesanan yang belum dibayar" }
+    }
+    const existingUsage = await prisma.promoUsage.findFirst({ where: { orderId } })
+    if (existingUsage) {
+      return { error: "Pesanan ini sudah menggunakan voucher diskon" }
     }
     let discountAmount = 0
     if (promo.type === PromoType.DISKON_PERSEN) {

@@ -1,13 +1,37 @@
+import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Package, AlertTriangle } from "lucide-react"
 import { CreateMaterialModal, AdjustStockModal, EditMaterialModal, DeleteMaterialModal } from "./inventory-modals"
+import { DataFilter } from "@/components/data-filter"
 
-export default async function InventoryPage() {
-  const materials = await prisma.material.findMany({
-    orderBy: { name: "asc" }
-  })
+type PageProps = {
+  searchParams: Promise<{ q?: string; page?: string; limit?: string }> | { q?: string; page?: string; limit?: string }
+}
+
+export default async function InventoryPage({ searchParams }: PageProps) {
+  const sp = await Promise.resolve(searchParams)
+  const q = sp?.q || ""
+  const page = parseInt(sp?.page || "1")
+  const limit = parseInt(sp?.limit || "10")
+  const skip = (page - 1) * limit
+
+  const where = q ? {
+    name: { contains: q, mode: "insensitive" as const }
+  } : {}
+
+  const [materials, total] = await Promise.all([
+    prisma.material.findMany({
+      where,
+      orderBy: { name: "asc" },
+      skip,
+      take: limit,
+    }),
+    prisma.material.count({ where })
+  ])
+
+  const totalPages = Math.ceil(total / limit)
 
   return (
     <div className="space-y-6">
@@ -18,6 +42,17 @@ export default async function InventoryPage() {
         </div>
         <CreateMaterialModal />
       </div>
+
+      <DataFilter 
+        searchPlaceholder="Cari nama bahan baku..." 
+        defaultQuery={q} 
+        defaultLimit={limit} 
+        limitOptions={[
+          { label: "10 data per halaman", value: 10 },
+          { label: "25 data per halaman", value: 25 },
+          { label: "50 data per halaman", value: 50 },
+        ]}
+      />
 
       <Card>
         <CardHeader>
@@ -79,6 +114,28 @@ export default async function InventoryPage() {
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-6 pt-4 border-t">
+              <span className="text-sm text-muted-foreground">
+                Menampilkan {materials.length} dari {total} bahan baku
+              </span>
+              <div className="flex gap-2">
+                <Link
+                  href={`?q=${q}&limit=${limit}&page=${page - 1}`}
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+                >
+                  Sebelumnya
+                </Link>
+                <Link
+                  href={`?q=${q}&limit=${limit}&page=${page + 1}`}
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
+                >
+                  Selanjutnya
+                </Link>
+              </div>
             </div>
           )}
         </CardContent>

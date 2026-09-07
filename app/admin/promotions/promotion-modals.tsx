@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { createPromotion, updatePromotion, deletePromotion, generateVoucherCodes, createCustomVoucher, deleteVoucherCode } from "@/app/actions/promotion"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { PromoType } from "@/app/generated/prisma/client"
 import { Plus, Loader2, Edit, Trash2, Ticket } from "lucide-react"
 
 interface Promotion {
@@ -90,8 +91,7 @@ export function CreatePromotionModal() {
   )
 }
 
-export function EditPromotionModal({ promo }: { promo: Promotion }) {
-  const [isOpen, setIsOpen] = useState(false)
+function EditPromotionForm({ promo, onClose }: { promo: Promotion; onClose: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
 
   const [name, setName] = useState(promo.name)
@@ -99,14 +99,6 @@ export function EditPromotionModal({ promo }: { promo: Promotion }) {
   const [value, setValue] = useState(promo.value.toString())
   const [startDate, setStartDate] = useState(new Date(promo.startDate).toISOString().split("T")[0])
   const [endDate, setEndDate] = useState(new Date(promo.endDate).toISOString().split("T")[0])
-
-  useEffect(() => {
-    setName(promo.name)
-    setType(promo.type)
-    setValue(promo.value.toString())
-    setStartDate(new Date(promo.startDate).toISOString().split("T")[0])
-    setEndDate(new Date(promo.endDate).toISOString().split("T")[0])
-  }, [promo])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -119,10 +111,52 @@ export function EditPromotionModal({ promo }: { promo: Promotion }) {
       toast.error(result.error)
     } else {
       toast.success("Promosi berhasil diperbarui")
-      setIsOpen(false)
+      onClose()
     }
     setIsLoading(false)
   }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 py-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Nama Promosi</Label>
+        <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required disabled={isLoading} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="type">Tipe Promosi</Label>
+        <Select name="type" value={type} onValueChange={(val) => setType(val as PromoType)} required>
+          <SelectTrigger id="type"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="DISKON_PERSEN">Diskon Persen (%)</SelectItem>
+            <SelectItem value="DISKON_NOMINAL">Diskon Nominal (Rp)</SelectItem>
+            <SelectItem value="VOUCHER">Voucher</SelectItem>
+            <SelectItem value="BUNDLING">Bundling</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="value">Nilai</Label>
+        <Input id="value" name="value" type="number" step="0.01" min="0" value={value} onChange={(e) => setValue(e.target.value)} required disabled={isLoading} />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="startDate">Tanggal Mulai</Label>
+          <Input id="startDate" name="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required disabled={isLoading} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="endDate">Tanggal Akhir</Label>
+          <Input id="endDate" name="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={isLoading} />
+        </div>
+      </div>
+      <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Perbarui Promosi"}
+      </Button>
+    </form>
+  )
+}
+
+export function EditPromotionModal({ promo }: { promo: Promotion }) {
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -133,41 +167,7 @@ export function EditPromotionModal({ promo }: { promo: Promotion }) {
         <DialogHeader>
           <DialogTitle>Edit Promosi</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nama Promosi</Label>
-            <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required disabled={isLoading} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="type">Tipe Promosi</Label>
-            <Select name="type" value={type} onValueChange={(val) => setType(val || "")} required>
-              <SelectTrigger id="type"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DISKON_PERSEN">Diskon Persen (%)</SelectItem>
-                <SelectItem value="DISKON_NOMINAL">Diskon Nominal (Rp)</SelectItem>
-                <SelectItem value="VOUCHER">Voucher</SelectItem>
-                <SelectItem value="BUNDLING">Bundling</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="value">Nilai</Label>
-            <Input id="value" name="value" type="number" step="0.01" min="0" value={value} onChange={(e) => setValue(e.target.value)} required disabled={isLoading} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Tanggal Mulai</Label>
-              <Input id="startDate" name="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">Tanggal Akhir</Label>
-              <Input id="endDate" name="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={isLoading} />
-            </div>
-          </div>
-          <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Perbarui Promosi"}
-          </Button>
-        </form>
+        {isOpen && <EditPromotionForm promo={promo} onClose={() => setIsOpen(false)} />}
       </DialogContent>
     </Dialog>
   )
@@ -252,7 +252,15 @@ function DeleteVoucherModal({ voucherId, code }: { voucherId: string; code: stri
   )
 }
 
-export function ManageVoucherModal({ promo, vouchers }: { promo: Promotion; vouchers: any[] }) {
+interface VoucherItem {
+  id: string
+  code: string
+  used: boolean
+  usedAt?: Date | string | null
+  createdAt?: Date | string
+}
+
+export function ManageVoucherModal({ promo, vouchers }: { promo: Promotion; vouchers: VoucherItem[] }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [customCode, setCustomCode] = useState("")

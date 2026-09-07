@@ -66,7 +66,24 @@ async function main() {
   console.log('4. Membuat Produk & BOM (Bill of Materials)...')
   const prodBrosur = await prisma.product.create({
     data: {
-      categoryId: catDigital.id, name: 'Cetak Brosur A4', description: 'Harga per 1 rim.', basePrice: 150000, unit: 'Rim',
+      categoryId: catDigital.id, 
+      name: 'Cetak Brosur A4', 
+      description: 'Cetak brosur full color kertas Art Paper 150gr, harga per 1 rim (500 lembar).', 
+      basePrice: 150000, 
+      unit: 'Rim',
+      imageUrl: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=600&auto=format&fit=crop',
+      designs: {
+        create: [
+          { 
+            title: 'Template Brosur Promosi Bisnis', 
+            imageUrl: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600&auto=format&fit=crop' 
+          },
+          { 
+            title: 'Template Brosur Event & Seminar', 
+            imageUrl: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=600&auto=format&fit=crop' 
+          }
+        ]
+      },
       materials: {
         create: [
           { materialId: matArtPaper.id, qtyNeeded: 250 },
@@ -78,7 +95,24 @@ async function main() {
 
   const prodSpanduk = await prisma.product.create({
     data: {
-      categoryId: catOutdoor.id, name: 'Spanduk 280gr', description: 'Harga per meter.', basePrice: 15000, unit: 'Meter',
+      categoryId: catOutdoor.id, 
+      name: 'Spanduk 280gr', 
+      description: 'Spanduk banner outdoor bahan flexi standar 280gsm, tahan cuaca dan panas.', 
+      basePrice: 15000, 
+      unit: 'Meter',
+      imageUrl: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&auto=format&fit=crop',
+      designs: {
+        create: [
+          { 
+            title: 'Template Banner Grand Opening', 
+            imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop' 
+          },
+          { 
+            title: 'Template Spanduk Wisuda & Kelulusan', 
+            imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&auto=format&fit=crop' 
+          }
+        ]
+      },
       materials: {
         create: [
           { materialId: matFlexi.id, qtyNeeded: 1 },
@@ -137,7 +171,12 @@ async function main() {
         create: {
           productId: prodBrosur.id,
           qty: 2,
-          specifications: { notes: "Warna cerah" },
+          specifications: { 
+            notes: "Warna cerah, cetak brosur promosi",
+            designMode: "TEMPLATE",
+            templateTitle: "Template Brosur Promosi Bisnis"
+          },
+          fileUrl: "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600&auto=format&fit=crop",
           subtotal: 300000
         }
       },
@@ -188,7 +227,11 @@ async function main() {
         create: {
           productId: prodSpanduk.id,
           qty: 5,
-          specifications: { notes: "Kasih mata ayam tiap sudut" },
+          specifications: { 
+            notes: "Kasih mata ayam tiap sudut",
+            designMode: "CUSTOM"
+          },
+          fileUrl: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&auto=format&fit=crop",
           subtotal: 75000
         }
       },

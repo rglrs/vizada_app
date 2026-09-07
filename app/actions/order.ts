@@ -26,8 +26,29 @@ export async function createOrder(formData: FormData) {
     if (!product) {
       return { error: "Produk tidak ditemukan" }
     }
-    let fileUrl = null
-    if (file && file.size > 0) {
+    const designMode = (formData.get("designMode") as string) || "CUSTOM"
+    let fileUrl: string | null = null
+
+    if (designMode === "TEMPLATE") {
+      const templateDesignId = formData.get("templateDesignId") as string
+      if (!templateDesignId) {
+        return { error: "Silakan pilih salah satu template desain yang disediakan" }
+      }
+      const templateDesign = await prisma.productDesign.findUnique({
+        where: { id: templateDesignId }
+      })
+      if (!templateDesign) {
+        return { error: "Template desain tidak ditemukan" }
+      }
+      fileUrl = templateDesign.imageUrl
+      specifications.designMode = "TEMPLATE"
+      specifications.templateTitle = templateDesign.title
+      specifications.templateDesignId = templateDesign.id
+    } else {
+      specifications.designMode = "CUSTOM"
+      if (!file || file.size === 0) {
+        return { error: "Silakan upload file desain Anda untuk mode Custom Desain" }
+      }
       const MAX_FILE_SIZE = 10 * 1024 * 1024
       const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
       if (file.size > MAX_FILE_SIZE) {

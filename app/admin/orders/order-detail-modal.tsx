@@ -20,6 +20,8 @@ interface OrderItem {
   }
   specifications?: {
     notes?: string
+    designMode?: "TEMPLATE" | "CUSTOM"
+    templateTitle?: string
   }
   fileUrl?: string | null
 }
@@ -178,11 +180,25 @@ export function OrderDetailModal({ order }: { order: OrderData }) {
                           {formatRupiah(item.subtotal)}
                         </span>
                       </div>
+
+                      {item.specifications?.designMode === "TEMPLATE" ? (
+                        <div className="mt-2">
+                          <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            🎨 Template: {item.specifications.templateTitle || "Desain Disediakan"}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="mt-2">
+                          <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                            📤 Custom Desain (Upload Pelanggan)
+                          </span>
+                        </div>
+                      )}
                       
                       {item.specifications?.notes && (
                         <div className="mt-3 bg-yellow-50/80 dark:bg-yellow-950/20 p-2.5 rounded border border-yellow-200/60 dark:border-yellow-900/50">
                           <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-500 flex items-center gap-1.5 mb-1 uppercase tracking-wider">
-                            <StickyNote className="h-3 w-3" /> Catatan:
+                            <StickyNote className="h-3 w-3" /> Catatan / Instruksi:
                           </p>
                           <p className="text-xs text-yellow-900 dark:text-yellow-200/80 wrap-break-words leading-relaxed">
                             {item.specifications.notes}
@@ -191,10 +207,20 @@ export function OrderDetailModal({ order }: { order: OrderData }) {
                       )}
 
                       {item.fileUrl && (
-                        <div className="mt-3 pt-3 border-t">
+                        <div className="mt-3 pt-3 border-t flex flex-col gap-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img 
+                            src={item.fileUrl} 
+                            alt="Preview Desain" 
+                            className="max-h-36 w-full object-contain rounded border bg-muted" 
+                            onError={(e) => {
+                              // If it's a PDF, hide image element
+                              ;(e.target as HTMLElement).style.display = "none"
+                            }}
+                          />
                           <a href={item.fileUrl} download target="_blank" rel="noreferrer" className="block">
-                            <Button size="sm" variant="secondary" className="w-full gap-2 h-8 text-xs">
-                              <DownloadCloud className="h-3.5 w-3.5" /> Unduh File Desain
+                            <Button size="sm" variant="secondary" className="w-full gap-2 h-8 text-xs font-medium">
+                              <DownloadCloud className="h-3.5 w-3.5" /> Unduh / Lihat Desain Full
                             </Button>
                           </a>
                         </div>
