@@ -69,8 +69,8 @@ export default async function HomePage() {
               {/* Bold Gradient Headline */}
               <div className="space-y-4">
                 <h1 className="text-4xl font-black tracking-tight sm:text-6xl md:text-7xl leading-[1.1]">
-                  Solusi Cetak Digital <br />
-                  <span className="text-gradient">Modern, Cepat & Presisi</span>
+                  Percetakan Digital Terpercaya <br />
+                  <span className="text-gradient">Cepat, Mudah & Berkualitas</span>
                 </h1>
                 <p className="mx-auto max-w-[720px] text-muted-foreground text-base sm:text-xl leading-relaxed font-normal">
                   Platform manajemen percetakan generasi baru. Nikmati kemudahan memesan, kalkulasi otomatis, pelacakan real-time, hingga jaminan mutu inspeksi berfoto dalam satu sistem.
