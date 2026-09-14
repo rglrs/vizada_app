@@ -95,66 +95,65 @@ export default async function ManagementDashboardPage() {
       {/* 4 Executive Metric Widgets */}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         {/* Metric 1 */}
-        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+        <div className="p-6 rounded-xl bg-card border border-border/70 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Pendapatan</span>
-            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 text-white shadow-md shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+            <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400">
               <DollarSign className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-4">
             <div className="text-2xl font-black text-foreground">{formatRupiah(totalRevenue)}</div>
-            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-emerald-600">
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-emerald-600">
               <span>Pendapatan sah terverifikasi</span>
             </div>
           </div>
         </div>
 
         {/* Metric 2 */}
-        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+        <div className="p-6 rounded-xl bg-card border border-border/70 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sedang Diproduksi</span>
-            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white shadow-md shadow-purple-500/20 group-hover:scale-110 transition-transform">
+            <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400">
               <Printer className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-4">
             <div className="text-2xl font-black text-foreground">{activeProduction} Pesanan</div>
-            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-indigo-600">
-              <span className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-blue-700 dark:text-blue-400">
+              <span className="h-2 w-2 rounded-full bg-blue-700" />
               <span>Di ruang mesin & QC</span>
             </div>
           </div>
         </div>
 
         {/* Metric 3 */}
-        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+        <div className="p-6 rounded-xl bg-card border border-border/70 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Pesanan</span>
-            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+            <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
               <Package className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-4">
             <div className="text-2xl font-black text-foreground">{totalOrders} Transaksi</div>
-            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-muted-foreground">
               <span>Keseluruhan siklus order</span>
             </div>
           </div>
         </div>
 
         {/* Metric 4 */}
-        <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-xs hover-lift group relative overflow-hidden">
+        <div className="p-6 rounded-xl bg-card border border-border/70 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pelanggan Aktif</span>
-            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20 group-hover:scale-110 transition-transform">
+            <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400">
               <Users className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-4">
             <div className="text-2xl font-black text-foreground">{totalCustomers} Akun</div>
-            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-muted-foreground">
               <span>Customer terdaftar</span>
             </div>
           </div>

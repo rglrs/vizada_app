@@ -19,13 +19,13 @@ export function UserNav({ user }: { user: { name?: string | null; role?: string 
   const getRoleBadge = (role?: string) => {
     switch (role) {
       case "ADMIN":
-        return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
+        return "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800"
       case "MANAGEMENT":
-        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+        return "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
       case "OPERATOR":
-        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+        return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
       default:
-        return "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20"
+        return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
     }
   }
 
@@ -33,27 +33,27 @@ export function UserNav({ user }: { user: { name?: string | null; role?: string 
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-border/80 bg-background/80 backdrop-blur-md hover:bg-muted/80 shadow-xs hover:shadow-sm transition-all duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary">
-        <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-400 text-white font-bold text-xs shadow-xs">
+      <DropdownMenuTrigger className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs transition-all duration-150 cursor-pointer outline-none">
+        <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-700 text-white font-bold text-xs shadow-xs">
           {initial}
-          <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
         </div>
-        <span className="hidden sm:inline-block text-xs font-semibold text-foreground max-w-[120px] truncate">
+        <span className="hidden sm:inline-block text-xs font-semibold text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
           {user.name}
         </span>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-60 p-2 rounded-2xl shadow-xl border-border/80 backdrop-blur-xl bg-card/95">
+      <DropdownMenuContent align="end" className="w-60 p-2 rounded-xl shadow-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col p-2 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-sm text-foreground truncate">{user.name || "Pengguna"}</span>
+              <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{user.name || "Pengguna"}</span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getRoleBadge(user.role)}`}>
                 {user.role || "CUSTOMER"}
               </span>
             </div>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-primary" /> Akun Terverifikasi
+            <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <Shield className="h-3 w-3 text-blue-700" /> Akun Terverifikasi
             </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="my-1.5" />

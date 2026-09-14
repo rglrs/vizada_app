@@ -1,6 +1,16 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Printer, Clock, ShieldCheck, ArrowRight, Palette, Sparkles, CheckCircle2, Zap, Layers, Cpu } from "lucide-react"
+import { 
+  Printer, 
+  Clock, 
+  ShieldCheck, 
+  ArrowRight, 
+  Palette, 
+  FileText, 
+  Layers, 
+  Truck
+} from "lucide-react"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { UserNav } from "@/components/user-nav"
@@ -9,323 +19,428 @@ export default async function HomePage() {
   const session = await getServerSession(authOptions)
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-600">
-      {/* Top Glass Header */}
-      <header className="px-6 lg:px-14 h-16 flex items-center border-b border-border/70 sticky top-0 glass-header z-50">
-        <Link className="flex items-center gap-2.5 font-extrabold text-2xl tracking-tighter group" href="/">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-400 text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-            <Printer className="h-5 w-5" />
-          </div>
-          <span className="text-gradient font-black tracking-tight">VIZADA</span>
-        </Link>
-        <nav className="ml-auto hidden md:flex items-center gap-6">
-          <Link className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" href="#layanan">
-            Layanan Unggulan
+    <div className="flex flex-col min-h-screen bg-slate-50/50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 selection:bg-blue-600/15 selection:text-blue-700">
+      {/* Top Navigation */}
+      <header className="px-6 lg:px-12 h-20 flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 sticky top-0 z-50 backdrop-blur-md">
+        <div className="flex items-center gap-8">
+          <Link className="flex items-center gap-3 group" href="/">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-700 text-white shadow-sm group-hover:bg-blue-800 transition-colors">
+              <Printer className="h-5 w-5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white leading-none">
+                VIZADA
+              </span>
+              <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase mt-0.5">
+                Percetakan & Digital Print
+              </span>
+            </div>
           </Link>
-          <Link className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" href="#fitur">
-            Fitur Cerdas
-          </Link>
-          <Link className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" href="#keunggulan">
-            Keunggulan
-          </Link>
-        </nav>
-        <div className="ml-auto md:ml-8 flex items-center gap-3">
+
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <Link className="hover:text-blue-700 dark:hover:text-blue-400 transition-colors" href="/products">
+              Produk Cetak
+            </Link>
+            <Link className="hover:text-blue-700 dark:hover:text-blue-400 transition-colors" href="#kualitas">
+              Bahan & Kualitas
+            </Link>
+            <Link className="hover:text-blue-700 dark:hover:text-blue-400 transition-colors" href="#alur-pesan">
+              Cara Pemesanan
+            </Link>
+            <Link className="hover:text-blue-700 dark:hover:text-blue-400 transition-colors" href="#monitoring">
+              Status Pesanan
+            </Link>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-3">
           {session?.user ? (
-            <UserNav user={session.user} />
+            <div className="flex items-center gap-3">
+              <Link href="/orders">
+                <Button variant="outline" size="sm" className="hidden sm:inline-flex border-slate-200 text-xs font-semibold">
+                  Pesanan Saya
+                </Button>
+              </Link>
+              <UserNav user={session.user} />
+            </div>
           ) : (
-            <>
+            <div className="flex items-center gap-2.5">
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="font-semibold text-sm">
+                <Button variant="ghost" size="sm" className="font-semibold text-slate-700 hover:text-slate-900 text-sm">
                   Masuk
                 </Button>
               </Link>
               <Link href="/register">
-                <Button size="sm" className="btn-gradient font-semibold text-sm px-4 rounded-xl shadow-md shadow-indigo-500/20">
-                  Daftar Sekarang
+                <Button size="sm" className="bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-4 rounded-lg shadow-sm">
+                  Daftar
                 </Button>
               </Link>
-            </>
+            </div>
           )}
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Hero Section with Ambient Glow and Floating Badges */}
-        <section className="relative w-full py-20 md:py-28 lg:py-36 overflow-hidden">
-          {/* Ambient Lighting Orbs */}
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-indigo-500/15 dark:bg-indigo-500/25 rounded-full blur-[110px] pointer-events-none animate-glow-breathe" />
-          <div className="absolute top-1/3 right-10 w-[350px] h-[250px] bg-cyan-400/15 dark:bg-cyan-400/20 rounded-full blur-[90px] pointer-events-none" />
-          <div className="absolute bottom-10 left-10 w-[350px] h-[250px] bg-purple-500/10 dark:bg-purple-500/15 rounded-full blur-[90px] pointer-events-none" />
-
-          <div className="container relative px-4 md:px-6 mx-auto">
-            <div className="flex flex-col items-center space-y-8 text-center max-w-4xl mx-auto">
-              {/* Floating Pill Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-semibold shadow-xs backdrop-blur-md animate-float-slow">
-                <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-                <span>Sistem Otomasi Percetakan Digital Terpadu</span>
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
-              </div>
-
-              {/* Bold Gradient Headline */}
-              <div className="space-y-4">
-                <h1 className="text-4xl font-black tracking-tight sm:text-6xl md:text-7xl leading-[1.1]">
-                  Solusi Cetak Digital <br />
-                  <span className="text-gradient">Modern, Cepat & Presisi</span>
-                </h1>
-                <p className="mx-auto max-w-[720px] text-muted-foreground text-base sm:text-xl leading-relaxed font-normal">
-                  Platform manajemen percetakan generasi baru. Nikmati kemudahan memesan, kalkulasi otomatis, pelacakan real-time, hingga jaminan mutu inspeksi berfoto dalam satu sistem.
-                </p>
-              </div>
-
-              {/* CTA Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-2 w-full sm:w-auto justify-center">
-                <Link href={session?.user ? "/products" : "/register"}>
-                  <Button size="lg" className="w-full sm:w-auto h-13 px-8 text-base font-bold btn-gradient rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 transition-all">
-                    Pesan Cetakan Sekarang <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href={session?.user ? "/orders" : "/login"}>
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-13 px-8 text-base font-bold rounded-xl border-border/80 bg-card/60 backdrop-blur-md hover:bg-muted/80 shadow-xs">
-                    Pantau Status Pesanan
-                  </Button>
-                </Link>
-              </div>
-
-              {/* Realtime Stats Showcase Capsule */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full pt-10 mt-6 border-t border-border/70">
-                <div className="flex flex-col items-center p-4 rounded-2xl bg-card/60 backdrop-blur-md border border-border/60 hover-lift">
-                  <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 mb-2">
-                    <Zap className="h-5 w-5" />
-                  </div>
-                  <span className="text-xl sm:text-2xl font-black text-foreground">Hari Ini</span>
-                  <span className="text-xs text-muted-foreground font-medium">Layanan Express</span>
+        {/* Hero Section: Clean Split Layout with Pure Photography */}
+        <section className="relative w-full py-12 md:py-18 lg:py-20 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800">
+          <div className="container px-4 md:px-8 lg:px-12 mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+              
+              {/* Left Column: Natural, Direct Copy & CTAs */}
+              <div className="lg:col-span-6 space-y-6">
+                <div className="space-y-4">
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.18]">
+                    Percetakan Digital & Offset Berkualitas untuk Segala Kebutuhan
+                  </h1>
+                  <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed">
+                    Melayani cetak dokumen, buku, brosur, banner, stiker label, kemasan produk, hingga merchandise. Pengerjaan rapi, tepat waktu, dan harga terjangkau.
+                  </p>
                 </div>
-                <div className="flex flex-col items-center p-4 rounded-2xl bg-card/60 backdrop-blur-md border border-border/60 hover-lift">
-                  <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-600 mb-2">
-                    <Palette className="h-5 w-5" />
-                  </div>
-                  <span className="text-xl sm:text-2xl font-black text-foreground">Ultra HD</span>
-                  <span className="text-xs text-muted-foreground font-medium">Presisi Warna Tajam</span>
+
+                {/* Direct Actions */}
+                <div className="flex flex-col sm:flex-row gap-3.5 pt-1">
+                  <Link href="/products">
+                    <Button size="lg" className="w-full sm:w-auto h-12 px-7 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg shadow-sm hover:shadow-md transition-all">
+                      Mulai Pesanan
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href={session?.user ? "/orders" : "/login"}>
+                    <Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-6 font-semibold rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+                      <FileText className="mr-2 h-4 w-4 text-slate-500" />
+                      Cek Status Pesanan
+                    </Button>
+                  </Link>
                 </div>
-                <div className="flex flex-col items-center p-4 rounded-2xl bg-card/60 backdrop-blur-md border border-border/60 hover-lift">
-                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 mb-2">
-                    <ShieldCheck className="h-5 w-5" />
+
+                {/* Natural Trust Points */}
+                <div className="pt-6 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <span className="font-bold text-sm block text-slate-900 dark:text-white">Hasil Cetak Rapi</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Warna pekat & potongan presisi</span>
                   </div>
-                  <span className="text-xl sm:text-2xl font-black text-foreground">100% QC</span>
-                  <span className="text-xs text-muted-foreground font-medium">Verifikasi Berfoto</span>
-                </div>
-                <div className="flex flex-col items-center p-4 rounded-2xl bg-card/60 backdrop-blur-md border border-border/60 hover-lift">
-                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 mb-2">
-                    <Clock className="h-5 w-5" />
+                  <div>
+                    <span className="font-bold text-sm block text-slate-900 dark:text-white">Tepat Waktu</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Pengerjaan sesuai jadwal</span>
                   </div>
-                  <span className="text-xl sm:text-2xl font-black text-foreground">Real-Time</span>
-                  <span className="text-xs text-muted-foreground font-medium">Tracking Antrean</span>
+                  <div>
+                    <span className="font-bold text-sm block text-slate-900 dark:text-white">Harga Terjangkau</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Transparan tanpa biaya tersembunyi</span>
+                  </div>
                 </div>
               </div>
+
+              {/* Right Column: Clean Machinery Photo (Just the Image) */}
+              <div className="lg:col-span-6">
+                <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md bg-slate-100 dark:bg-slate-800 aspect-[4/3] w-full">
+                  <Image 
+                    src="/images/printing-machine-hero.jpg" 
+                    alt="Mesin Cetak Vizada" 
+                    fill
+                    priority
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                  />
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* Layanan Cetak Unggulan */}
-        <section id="layanan" className="w-full py-16 md:py-24 bg-muted/30 border-y border-border/70 relative">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="flex flex-col items-center justify-center space-y-3 text-center mb-16">
-              <span className="text-xs font-bold uppercase tracking-wider text-primary px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                Katalog Lengkap
-              </span>
-              <h2 className="text-3xl font-black tracking-tight sm:text-5xl">
-                Layanan Cetak Unggulan
+        {/* 4 Keunggulan Layanan */}
+        <section className="w-full py-12 bg-slate-50 dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800">
+          <div className="container px-4 md:px-8 lg:px-12 mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              
+              <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 mb-4">
+                  <Printer className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Satuan Maupun Partai Besar</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Kami melayani pesanan jumlah sedikit untuk kebutuhan pribadi hingga jumlah ribuan untuk perusahaan atau event.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 mb-4">
+                  <Palette className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Hasil Cetak Tajam & Jelas</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Mesin cetak yang terawat menghasilkan cetakan dengan warna yang tajam, teks terbaca jelas, dan tidak mudah luntur.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 mb-4">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Pemeriksaan Kualitas Rapi</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Setiap pesanan diperiksa dan difoto sebelum diserahkan, memastikan barang yang diterima sesuai dengan pesanan.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 mb-4">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Pengerjaan Sesuai Jadwal</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Alur produksi yang teratur memastikan cetakan selesai tepat waktu sesuai tenggat waktu yang disepakati.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* Bahan & Kualitas (With Pure Photography) */}
+        <section id="kualitas" className="w-full py-16 md:py-20 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800">
+          <div className="container px-4 md:px-8 lg:px-12 mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+              
+              {/* Left Column: Clear Material Options */}
+              <div className="lg:col-span-6 space-y-6">
+                <div className="space-y-3">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Pilihan Bahan & Finishing Berkualitas
+                  </h2>
+                  <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+                    Kami menyediakan beragam varian kertas, stiker, dan opsi finishing untuk memastikan cetakan Anda tampil rapi, awet, dan profesional.
+                  </p>
+                </div>
+
+                <div className="space-y-4 pt-1">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                      Pilihan Kertas Lengkap
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      Tersedia HVS, Art Paper, Art Carton tebal, Kertas Ivory, Kertas Kraft cokelat, hingga Stiker Vinyl tahan air.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                      Opsi Finishing Rapi
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      Laminasi Doff atau Glossy, jilid lem panas (buku), spiral kawat, foil emas/perak, dan potong pola sesuai kebutuhan.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                      Jaminan Kepuasan Cetak
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      Kami berkomitmen memberikan hasil terbaik. Jika terdapat cacat produksi yang tidak sesuai pesanan, kami siap membantu penyelesaiannya.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link href="/products">
+                    <Button className="bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-6 h-11 rounded-lg">
+                      Lihat Produk Cetak
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right Column: Clean Print Sample Photo (Just the Image) */}
+              <div className="lg:col-span-6">
+                <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md bg-slate-100 dark:bg-slate-800 aspect-[4/3] w-full">
+                  <Image 
+                    src="/images/print-quality-showcase.jpg" 
+                    alt="Contoh Hasil Cetak Vizada" 
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* Alur Pemesanan 4 Langkah */}
+        <section id="alur-pesan" className="w-full py-16 md:py-20 bg-slate-50 dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800">
+          <div className="container px-4 md:px-8 lg:px-12 mx-auto">
+            
+            <div className="max-w-2xl mb-12 text-center mx-auto space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                Cara Pemesanan di Vizada
               </h2>
-              <p className="max-w-[700px] text-muted-foreground text-sm sm:text-base">
-                Didukung mesin industri modern dengan kemampuan cetak presisi untuk segala kebutuhan personal maupun komersial skala besar.
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                4 langkah praktis untuk memesan cetakan Anda
               </p>
             </div>
 
-            <div className="mx-auto grid max-w-5xl items-stretch gap-8 md:grid-cols-3">
-              {/* Card 1 */}
-              <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card p-8 shadow-xs hover-lift group">
-                <div className="space-y-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 text-white shadow-md shadow-indigo-500/20 group-hover:scale-110 transition-transform">
-                    <Palette className="h-7 w-7" />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight">Large Format Printing</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Banner flexi, spanduk, backdrop acara, roll-up banner, dan sticker vinil resolusi tinggi tahan air dan cuaca luar ruangan.
-                  </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              
+              {/* Step 1 */}
+              <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mb-2">
+                  01
                 </div>
-                <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs font-semibold text-primary">
-                  <span>Mulai Rp 15.000 / m²</span>
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-
-              {/* Card 2 */}
-              <div className="flex flex-col justify-between rounded-2xl border border-indigo-500/30 bg-card p-8 shadow-md shadow-indigo-500/5 hover-lift relative group">
-                <div className="absolute -top-3 right-6 px-3 py-0.5 rounded-full bg-primary text-white text-[11px] font-extrabold shadow-sm">
-                  TERPOPULER
-                </div>
-                <div className="space-y-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20 group-hover:scale-110 transition-transform">
-                    <Printer className="h-7 w-7" />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight">Document & Publishing</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Cetak buku, modul pelatihan, majalah, kartu nama laminasi, brosur promosi, dan dokumen perkantoran dengan jilid profesional.
-                  </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs font-semibold text-primary">
-                  <span>Mulai Rp 500 / lembar</span>
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-
-              {/* Card 3 */}
-              <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card p-8 shadow-xs hover-lift group">
-                <div className="space-y-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white shadow-md shadow-purple-500/20 group-hover:scale-110 transition-transform">
-                    <Layers className="h-7 w-7" />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight">Merchandise & Souvenir</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Custom mug keramik, pin magnet, ID card PVC karyawan, lanyard sablon, dan kemasan kustom untuk promosi brand Anda.
-                  </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs font-semibold text-primary">
-                  <span>Mulai Rp 10.000 / pcs</span>
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Keunggulan Sistem Terpadu */}
-        <section id="keunggulan" className="w-full py-20 md:py-28 relative overflow-hidden">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-              <div className="space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-600 dark:text-cyan-400 text-xs font-bold">
-                  <Cpu className="h-3.5 w-3.5" /> Teknologi Terintegrasi
-                </div>
-                <h2 className="text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-                  Mengapa Memilih Ekosistem Vizada?
-                </h2>
-                <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
-                  Kami menggabungkan mesin cetak mutakhir dengan sistem ERP digital yang transparan untuk menghilangkan kendala waktu, keraguan kualitas, dan antrean manual.
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Pilih Produk</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Pilih produk yang diinginkan, tentukan jenis kertas, ukuran, dan jumlah yang dibutuhkan.
                 </p>
-
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-muted/40 border border-border/60">
-                    <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 mt-0.5">
-                      <Clock className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-base text-foreground">Jadwal Produksi Mesin Akurat</h4>
-                      <p className="text-sm text-muted-foreground mt-1">Sistem penjadwalan cerdas mengalokasikan pesanan ke operator & mesin cetak yang tersedia tanpa tumpang tindih.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-muted/40 border border-border/60">
-                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 mt-0.5">
-                      <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-base text-foreground">Quality Control Berfoto</h4>
-                      <p className="text-sm text-muted-foreground mt-1">Setiap hasil cetakan diinspeksi oleh operator QC berfoto sebelum diserahkan ke tangan pelanggan.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-muted/40 border border-border/60">
-                    <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-600 mt-0.5">
-                      <Zap className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-base text-foreground">Pembayaran Instan & Voucher Promo</h4>
-                      <p className="text-sm text-muted-foreground mt-1">Unggah bukti transfer langsung terverifikasi, otomatis memotong diskon voucher hemat.</p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              {/* Showcase Card */}
-              <div className="flex justify-center">
-                <div className="relative w-full max-w-[480px] p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-indigo-500/10 via-card to-cyan-500/10 border border-border/80 shadow-2xl shadow-indigo-500/10 backdrop-blur-xl">
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between pb-4 border-b border-border/70">
-                      <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full bg-rose-500" />
-                        <div className="h-3 w-3 rounded-full bg-amber-500" />
-                        <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                      </div>
-                      <span className="text-xs font-bold text-muted-foreground">VIZADA MONITORING v2.0</span>
-                    </div>
+              {/* Step 2 */}
+              <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mb-2">
+                  02
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Upload Desain</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Unggah file desain yang siap dicetak berformat PDF, JPG, atau PNG dengan resolusi yang jelas.
+                </p>
+              </div>
 
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-card border border-border/70 shadow-xs">
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-2.5 w-2.5 rounded-full bg-indigo-500 animate-pulse" />
-                          <span className="text-xs font-bold">Mesin Roland TrueVis VG3</span>
-                        </div>
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600">Mencetak #VZ-1082</span>
-                      </div>
+              {/* Step 3 */}
+              <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mb-2">
+                  03
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Proses Cetak</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Pesanan Anda langsung diproses dan dicek oleh tim produksi agar hasilnya rapi dan sesuai.
+                </p>
+              </div>
 
-                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-card border border-border/70 shadow-xs">
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                          <span className="text-xs font-bold">Konica Minolta AccurioPress</span>
-                        </div>
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">Tersedia</span>
-                      </div>
+              {/* Step 4 */}
+              <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mb-2">
+                  04
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Selesai & Kirim</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  Pesanan dikemas rapi dan siap diambil di workshop atau dikirimkan langsung ke alamat Anda.
+                </p>
+              </div>
 
-                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-card border border-border/70 shadow-xs">
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                          <span className="text-xs font-bold">Inspeksi Quality Control</span>
-                        </div>
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">100% Lolos</span>
-                      </div>
-                    </div>
+            </div>
 
-                    <div className="pt-2">
-                      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white flex items-center justify-between shadow-lg shadow-indigo-500/25">
-                        <div>
-                          <span className="text-[11px] uppercase tracking-wider font-semibold opacity-90">Efisiensi Produksi</span>
-                          <h4 className="text-lg font-black">99.4% On-Time</h4>
-                        </div>
-                        <CheckCircle2 className="h-8 w-8 text-white/90" />
-                      </div>
-                    </div>
-                  </div>
+            <div className="mt-10 text-center">
+              <Link href="/products">
+                <Button size="lg" className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-8 h-12 rounded-lg shadow-sm">
+                  Pesan Sekarang
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+          </div>
+        </section>
+
+        {/* Monitoring & Status Pesanan */}
+        <section id="monitoring" className="w-full py-16 md:py-20 bg-white dark:bg-slate-900">
+          <div className="container px-4 md:px-8 lg:px-12 mx-auto">
+            <div className="max-w-3xl mx-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-8 sm:p-10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-700">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    Pantau Perkembangan Pesanan Anda
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                    Cek tahapan cetak dan status pengerjaan pesanan Anda secara online
+                  </p>
+                </div>
+                <Link href="/orders">
+                  <Button variant="outline" className="text-xs font-bold border-slate-300">
+                    Cek Status Pesanan
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6">
+                <div className="space-y-1.5">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white block">Status Real-Time</span>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Ketahui apakah pesanan Anda sedang dalam antrean, proses cetak, atau siap diambil.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white block">Foto Hasil Jadi</span>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Lihat dokumentasi foto barang setelah selesai diproduksi langsung di akun Anda.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white block">Riwayat Transaksi</span>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Catatan pesanan dan bukti nota tersimpan rapi untuk memudahkan pemesanan ulang.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </section>
+
       </main>
 
-      {/* Modern Footer */}
-      <footer className="border-t border-border/70 bg-card/60 backdrop-blur-md py-10 px-6 lg:px-14">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-indigo-600 to-cyan-400 text-white font-bold text-xs">
-              <Printer className="h-4 w-4" />
+      {/* Footer */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-10 px-6 lg:px-12 text-slate-600 dark:text-slate-400 text-sm">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            
+            {/* Col 1: Identity */}
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-700 text-white font-bold text-xs">
+                  <Printer className="h-4 w-4" />
+                </div>
+                <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">VIZADA</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
+                Layanan percetakan digital dan offset untuk kebutuhan personal, instansi, dan bisnis dengan kualitas terjamin dan pengerjaan tepat waktu.
+              </p>
             </div>
-            <span className="font-extrabold text-sm tracking-tight text-gradient">VIZADA</span>
-            <span className="text-xs text-muted-foreground ml-2">
-              © 2026 Percetakan Digital Vizada. Hak Cipta Dilindungi.
-            </span>
+
+            {/* Col 2: Jam Operasional */}
+            <div className="space-y-2">
+              <div className="font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-white">
+                Jam Operasional
+              </div>
+              <div className="text-xs space-y-1 text-slate-500 dark:text-slate-400">
+                <p>Senin – Jumat: 08.00 – 21.00 WIB</p>
+                <p>Sabtu: 08.00 – 17.00 WIB</p>
+                <p>Minggu: Libur (Pemesanan online tetap diterima)</p>
+              </div>
+            </div>
+
+            {/* Col 3: Navigasi Cepat */}
+            <div className="space-y-2">
+              <div className="font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-white">
+                Tautan Cepat
+              </div>
+              <ul className="space-y-1.5 text-xs">
+                <li><Link href="/products" className="hover:text-blue-700 transition-colors">Katalog Produk</Link></li>
+                <li><Link href="/orders" className="hover:text-blue-700 transition-colors">Lacak Pesanan</Link></li>
+                <li><Link href="/login" className="hover:text-blue-700 transition-colors">Masuk Akun</Link></li>
+              </ul>
+            </div>
+
           </div>
-          <nav className="flex gap-6 text-xs font-semibold text-muted-foreground">
-            <Link className="hover:text-primary transition-colors" href="/products">
-              Katalog Layanan
-            </Link>
-            <Link className="hover:text-primary transition-colors" href="/orders">
-              Lacak Pesanan
-            </Link>
-            <Link className="hover:text-primary transition-colors" href="/login">
-              Akses Karyawan
-            </Link>
-          </nav>
+
+          <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
+            <div>
+              © 2026 Vizada Percetakan. Hak cipta dilindungi.
+            </div>
+            <div>
+              Layanan Percetakan Digital & Offset
+            </div>
+          </div>
         </div>
       </footer>
     </div>

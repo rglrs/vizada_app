@@ -42,11 +42,11 @@ export function SharedDashboardLayout({
       <aside className="hidden border-r border-border/70 bg-card/75 backdrop-blur-xl md:flex flex-col h-full overflow-hidden shadow-xs">
         {/* Brand Header */}
         <div className="flex h-16 items-center px-6 border-b border-border/70 gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-400 text-white shadow-md shadow-indigo-500/25">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-white shadow-xs">
             <Printer className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="font-extrabold text-base tracking-tight text-gradient">
+            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
               VIZADA ERP
             </span>
             <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
@@ -71,16 +71,16 @@ export function SharedDashboardLayout({
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  className={`group flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
                     isActive 
-                      ? "bg-primary text-primary-foreground shadow-sm shadow-primary/25 font-semibold" 
+                      ? "bg-blue-700 text-white shadow-xs font-semibold" 
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
-                  <Icon className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isActive ? "" : "group-hover:scale-110 group-hover:text-primary"}`} />
+                  <Icon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{item.label}</span>
                   {isActive && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
                   )}
                 </Link>
               )
@@ -89,11 +89,11 @@ export function SharedDashboardLayout({
         </div>
 
         {/* User Card & Logout */}
-        <div className="p-3 m-3 rounded-2xl bg-muted/50 border border-border/70 space-y-3">
+        <div className="p-3 m-3 rounded-xl bg-muted/50 border border-border/70 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-400 text-white font-bold text-xs shadow-xs">
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white font-bold text-xs shadow-xs">
               {initial}
-              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-xs font-bold text-foreground truncate">
@@ -129,10 +129,10 @@ export function SharedDashboardLayout({
               <SheetContent side="left" className="flex flex-col w-72 p-0">
                 <SheetTitle className="sr-only">Menu Navigasi</SheetTitle> 
                 <div className="flex h-16 items-center px-6 border-b gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 text-white">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-700 text-white">
                     <Printer className="h-4 w-4" />
                   </div>
-                  <span className="font-extrabold text-base tracking-tight text-gradient">
+                  <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
                     VIZADA ERP
                   </span>
                 </div>
@@ -145,9 +145,9 @@ export function SharedDashboardLayout({
                       <Link 
                         key={item.href} 
                         href={item.href} 
-                        className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
+                        className={`flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
                           isActive 
-                            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/25 font-semibold" 
+                            ? "bg-blue-700 text-white shadow-xs font-semibold" 
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         }`}
                       >
@@ -171,13 +171,13 @@ export function SharedDashboardLayout({
 
           {/* Header Title / Breadcrumbs */}
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-              <Shield className="h-3 w-3" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <Shield className="h-3 w-3 text-blue-700" />
               {title}
             </span>
             <div className="hidden lg:flex items-center gap-1.5 text-xs text-muted-foreground ml-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Sistem Operasional Online</span>
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span>Sistem Operasional Aktif</span>
             </div>
           </div>
 

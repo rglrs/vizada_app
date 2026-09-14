@@ -62,18 +62,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </Link>
       </div>
 
-      <Card className="border border-border/70 shadow-2xl shadow-indigo-500/5 rounded-3xl overflow-hidden bg-card/90 backdrop-blur-xl">
-        <div className="bg-muted/40 px-6 py-8 border-b border-border/70 text-center relative overflow-hidden">
-          <CardTitle className="text-3xl font-black tracking-tight text-foreground">Status Pengerjaan</CardTitle>
+      <Card className="border border-slate-200 dark:border-slate-800 shadow-md rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
+        <div className="bg-slate-50 dark:bg-slate-800/60 px-6 py-8 border-b border-slate-200 dark:border-slate-800 text-center relative overflow-hidden">
+          <CardTitle className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Status Pengerjaan</CardTitle>
           <CardDescription className="text-sm mt-1.5 flex items-center justify-center gap-1.5">
-            <span>Invoice:</span> <span className="font-bold text-primary font-mono text-base">{order.orderNumber}</span>
+            <span>Invoice:</span> <span className="font-bold text-blue-700 dark:text-blue-400 font-mono text-base">{order.orderNumber}</span>
           </CardDescription>
 
           {!isCancelled ? (
             <div className="relative flex justify-between items-center mt-12 max-w-xl mx-auto px-4">
-              <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1.5 bg-muted rounded-full z-0"></div>
+              <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full z-0"></div>
               <div 
-                className="absolute left-4 top-1/2 -translate-y-1/2 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-500 to-cyan-400 rounded-full transition-all duration-700 z-0 shadow-xs"
+                className="absolute left-4 top-1/2 -translate-y-1/2 h-1.5 bg-blue-700 rounded-full transition-all duration-500 z-0"
                 style={{ width: currentStepIndex > 0 ? `calc(${(currentStepIndex / (steps.length - 1)) * 100}% - 2rem)` : '0%' }}
               ></div>
               
@@ -84,15 +84,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
                 return (
                   <div key={step.id} className="relative flex flex-col items-center gap-3 z-10 bg-transparent px-1">
-                    <div className={`h-12 w-12 rounded-full flex items-center justify-center border-3 transition-all duration-300 ${
+                    <div className={`h-11 w-11 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${
                       isCompleted 
-                        ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/25" 
-                        : "bg-background border-border text-muted-foreground"
-                    } ${isActive ? "ring-4 ring-primary/30 scale-110 shadow-lg shadow-indigo-500/35 animate-pulse" : ""}`}>
+                        ? "bg-blue-700 border-blue-700 text-white shadow-xs" 
+                        : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-400"
+                    } ${isActive ? "ring-4 ring-blue-700/20 scale-105" : ""}`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <span className={`absolute -bottom-7 w-24 text-center text-[10px] font-bold uppercase tracking-wider ${
-                      isCompleted ? "text-foreground" : "text-muted-foreground hidden sm:block"
+                      isCompleted ? "text-slate-900 dark:text-white" : "text-slate-400 hidden sm:block"
                     }`}>
                       {step.label}
                     </span>

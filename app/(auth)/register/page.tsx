@@ -9,7 +9,7 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { ArrowLeft, Loader2, Printer, Sparkles } from "lucide-react"
+import { ArrowLeft, Loader2, Printer } from "lucide-react"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -32,48 +32,44 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 overflow-hidden">
-      {/* Ambient Lighting Orbs */}
-      <div className="absolute top-1/4 -right-20 w-[450px] h-[300px] bg-indigo-500/15 dark:bg-indigo-500/25 rounded-full blur-[100px] pointer-events-none animate-glow-breathe" />
-      <div className="absolute bottom-1/4 -left-20 w-[450px] h-[300px] bg-cyan-400/15 dark:bg-cyan-400/20 rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="w-full max-w-md mb-6 z-10">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4">
+      <div className="w-full max-w-md mb-6">
         <Link href="/">
-          <Button variant="ghost" size="sm" className="font-semibold text-xs rounded-xl hover:bg-muted/80">
+          <Button variant="ghost" size="sm" className="font-semibold text-xs rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800">
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Kembali ke Beranda
           </Button>
         </Link>
       </div>
 
-      <Card className="w-full max-w-md border border-border/70 bg-card/85 backdrop-blur-xl shadow-xl shadow-indigo-500/5 rounded-3xl z-10 overflow-hidden">
+      <Card className="w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-md rounded-2xl overflow-hidden">
         {/* Brand Header */}
         <div className="flex flex-col items-center pt-8 pb-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-400 text-white shadow-lg shadow-indigo-500/30 mb-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-700 text-white shadow-sm mb-3">
             <Printer className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-black tracking-tight text-foreground">
+          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Daftar Akun Baru
           </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-primary" /> Bergabunglah dengan ribuan pelanggan Vizada
+          <CardDescription className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Buat akun untuk memesan cetakan dan memantau status produksi Anda
           </CardDescription>
         </div>
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-3.5 pt-4 px-6 sm:px-8">
             <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-xs font-bold text-foreground">Nama Lengkap</Label>
+              <Label htmlFor="name" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Nama Lengkap</Label>
               <Input 
                 id="name" 
                 name="name" 
                 placeholder="Contoh: Budi Santoso" 
                 disabled={isLoading} 
                 required 
-                className="h-10 rounded-xl bg-background/60 border-border/80 text-sm focus-visible:ring-primary"
+                className="h-10 rounded-lg border-slate-200 dark:border-slate-700 text-sm focus-visible:ring-blue-700"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-bold text-foreground">Alamat Email</Label>
+              <Label htmlFor="email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Alamat Email</Label>
               <Input 
                 id="email" 
                 name="email" 
@@ -81,11 +77,11 @@ export default function RegisterPage() {
                 placeholder="nama@email.com" 
                 disabled={isLoading} 
                 required 
-                className="h-10 rounded-xl bg-background/60 border-border/80 text-sm focus-visible:ring-primary"
+                className="h-10 rounded-lg border-slate-200 dark:border-slate-700 text-sm focus-visible:ring-blue-700"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-xs font-bold text-foreground">Nomor WhatsApp</Label>
+              <Label htmlFor="phone" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Nomor WhatsApp</Label>
               <Input 
                 id="phone" 
                 name="phone" 
@@ -93,11 +89,11 @@ export default function RegisterPage() {
                 placeholder="08123456789" 
                 disabled={isLoading} 
                 required 
-                className="h-10 rounded-xl bg-background/60 border-border/80 text-sm focus-visible:ring-primary"
+                className="h-10 rounded-lg border-slate-200 dark:border-slate-700 text-sm focus-visible:ring-blue-700"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-xs font-bold text-foreground">Kata Sandi</Label>
+              <Label htmlFor="password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Kata Sandi</Label>
               <Input 
                 id="password" 
                 name="password" 
@@ -105,12 +101,12 @@ export default function RegisterPage() {
                 placeholder="Minimal 6 karakter" 
                 disabled={isLoading} 
                 required 
-                className="h-10 rounded-xl bg-background/60 border-border/80 text-sm focus-visible:ring-primary"
+                className="h-10 rounded-lg border-slate-200 dark:border-slate-700 text-sm focus-visible:ring-blue-700"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pt-2 pb-8 px-6 sm:px-8">
-            <Button type="submit" className="w-full h-11 text-sm font-bold btn-gradient rounded-xl shadow-md shadow-indigo-500/25" disabled={isLoading}>
+            <Button type="submit" className="w-full h-11 text-sm font-bold bg-blue-700 hover:bg-blue-800 text-white rounded-lg shadow-sm" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -120,9 +116,9 @@ export default function RegisterPage() {
                 "Buat Akun Sekarang"
               )}
             </Button>
-            <div className="text-xs text-center text-muted-foreground">
+            <div className="text-xs text-center text-slate-500 dark:text-slate-400">
               Sudah memiliki akun?{" "}
-              <Link href="/login" className="text-primary font-bold hover:underline">
+              <Link href="/login" className="text-blue-700 dark:text-blue-400 font-semibold hover:underline">
                 Masuk disini
               </Link>
             </div>
