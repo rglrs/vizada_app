@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
+import { sendWhatsAppMessage } from "@/lib/whatsapp"
 
 export async function uploadPaymentProof(formData: FormData) {
   try {
@@ -28,7 +29,10 @@ export async function uploadPaymentProof(formData: FormData) {
     if (!ALLOWED_TYPES.includes(file.type)) {
       return { error: "Format file tidak didukung, gunakan JPG atau PNG" }
     }
-    const order = await prisma.order.findUnique({ where: { id: orderId } })
+    const order = await prisma.order.findUnique({ 
+      where: { id: orderId },
+      include: { customer: true }
+    })
     if (!order) {
       return { error: "Pesanan tidak ditemukan" }
     }
@@ -68,6 +72,46 @@ export async function uploadPaymentProof(formData: FormData) {
       where: { id: orderId },
       data: { status: "WAITING_APPROVAL" }
     })
+
+    // Kirim notifikasi WhatsApp upload bukti pembayaran (non-blocking)
+    try {
+      const formattedAmount = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0
+      }).format(finalAmount)
+
+      // 1. Notif ke Customer
+      if (order.customer?.phone) {
+        sendWhatsAppMessage({
+          phone: order.customer.phone,
+          message:
+`Halo Kak *${order.customer.name}*!
+Bukti pembayaran Anda untuk pesanan *#${order.orderNumber}* sejumlah *${formattedAmount}* via *${method}* berhasil diunggah.
+
+Status pesanan saat ini: *Menunggu Verifikasi Admin*. Kami akan segera mengonfirmasi dan memulai proses produksi.`
+        })
+      }
+
+      // 2. Notif ke Admin
+      const adminPhone = process.env.WHATSAPP_ADMIN_PHONE
+      if (adminPhone) {
+        sendWhatsAppMessage({
+          phone: adminPhone,
+          message:
+`💳 *BUKTI PEMBAYARAN MASUK!*
+No. Invoice: #${order.orderNumber}
+Customer: ${order.customer?.name || "Pelanggan"} (${order.customer?.phone || "-"})
+Nominal: ${formattedAmount}
+Metode: ${method}
+
+Silakan periksa dan verifikasi pembayaran di dashboard admin.`
+        })
+      }
+    } catch (waErr) {
+      console.warn("[WhatsApp Notification Error]:", waErr)
+    }
+
     revalidatePath(`/orders/${orderId}`)
     revalidatePath("/admin/orders")
     return { success: true }

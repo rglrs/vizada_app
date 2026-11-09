@@ -1,12 +1,36 @@
 import { prisma } from "@/lib/prisma"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DollarSign, Package, Printer, Users, ArrowRight, AlertTriangle, TrendingUp, Sparkles } from "lucide-react"
+import { 
+  DollarSign, 
+  Package, 
+  Printer, 
+  Users, 
+  ArrowRight, 
+  AlertTriangle, 
+  Clock, 
+  CheckCircle2, 
+  BarChart3, 
+  Calendar,
+  Layers
+} from "lucide-react"
 import Link from "next/link"
 import { ExportButton } from "./export-button"
 import { StatusBadge } from "@/components/ui/status-badge"
+import { OrderAnalyticsChart } from "./order-analytics-chart"
 
 export default async function ManagementDashboardPage() {
-  const [totalOrders, activeProduction, totalCustomers, revenueAgg, recentOrders, allMaterials, ordersLast7Days, allOrdersExport] = await Promise.all([
+  const [
+    totalOrders, 
+    activeProduction, 
+    totalCustomers, 
+    revenueAgg, 
+    recentOrders, 
+    allMaterials, 
+    allOrdersForAnalytics,
+    completedOrdersCount,
+    waitingApprovalCount,
+    allOrdersExport
+  ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({ where: { status: "IN_PRODUCTION" } }),
     prisma.user.count({ where: { role: "CUSTOMER" } }),
@@ -21,11 +45,17 @@ export default async function ManagementDashboardPage() {
     }),
     prisma.material.findMany(),
     prisma.order.findMany({
-      where: { 
-        createdAt: { gte: new Date(new Date().setDate(new Date().getDate() - 7)) },
-        status: { notIn: ["CANCELLED", "PENDING_PAYMENT"] }
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        orderNumber: true,
+        totalAmount: true,
+        status: true,
+        createdAt: true
       }
     }),
+    prisma.order.count({ where: { status: "COMPLETED" } }),
+    prisma.order.count({ where: { status: "WAITING_APPROVAL" } }),
     prisma.order.findMany({
       orderBy: { createdAt: "desc" },
       include: { customer: true }
@@ -39,22 +69,13 @@ export default async function ManagementDashboardPage() {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(price)
   }
 
-  const last7Days = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    return d.toISOString().split("T")[0]
-  }).reverse()
-
-  const chartData = last7Days.map(date => {
-    const dayOrders = ordersLast7Days.filter(o => o.createdAt.toISOString().split("T")[0] === date)
-    const total = dayOrders.reduce((sum, o) => sum + o.totalAmount, 0)
-    return { 
-      label: new Intl.DateTimeFormat("id-ID", { weekday: 'short' }).format(new Date(date)), 
-      total 
-    }
-  })
-
-  const maxChartValue = Math.max(...chartData.map(d => d.total), 1)
+  const serializedOrders = allOrdersForAnalytics.map(o => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    totalAmount: o.totalAmount,
+    status: o.status,
+    createdAt: o.createdAt.toISOString()
+  }))
 
   return (
     <div className="space-y-8">
@@ -160,7 +181,10 @@ export default async function ManagementDashboardPage() {
         </div>
       </div>
 
-      {/* Main Charts & Recent Orders Grid */}
+      {/* NEW: Comprehensive Order & Revenue Trends Chart (Day-to-day & Month-to-month) */}
+      <OrderAnalyticsChart rawOrders={serializedOrders} />
+
+      {/* Bottom Grid: Recent Orders & Operational Summary */}
       <div className="grid gap-6 md:grid-cols-7 items-start">
         {/* Table Transaksi Terbaru */}
         <div className="rounded-2xl bg-card border border-border/70 shadow-xs md:col-span-4 lg:col-span-5 overflow-hidden">
@@ -209,40 +233,85 @@ export default async function ManagementDashboardPage() {
           </div>
         </div>
 
-        {/* 7-Day Revenue Bar Chart */}
-        <div className="rounded-2xl bg-card border border-border/70 shadow-xs md:col-span-3 lg:col-span-2 p-6 flex flex-col justify-between">
+        {/* Operational Status Breakdown & Quick Access */}
+        <div className="rounded-2xl bg-card border border-border/70 shadow-xs md:col-span-3 lg:col-span-2 p-6 flex flex-col justify-between space-y-6">
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-border/70">
               <div className="flex items-center gap-2 font-bold text-sm text-foreground">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span>Tren Omzet 7 Hari</span>
+                <Layers className="h-4 w-4 text-primary" />
+                <span>Status & Alur Pesanan</span>
               </div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Harian</span>
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Operasional
+              </span>
             </div>
 
-            <div className="flex h-56 items-end gap-2.5 pt-8 px-1">
-              {chartData.map((data, idx) => {
-                const heightPercentage = (data.total / maxChartValue) * 100
-                return (
-                  <div key={idx} className="relative flex w-full flex-col items-center justify-end group h-full">
-                    <div 
-                      className="w-full rounded-t-lg bg-gradient-to-t from-indigo-600/30 to-indigo-600 group-hover:from-indigo-500 group-hover:to-cyan-400 transition-all duration-300 cursor-pointer shadow-xs" 
-                      style={{ height: `${Math.max(heightPercentage, 8)}%` }}
-                    />
-                    <span className="mt-2 text-[10px] text-muted-foreground font-bold uppercase">{data.label}</span>
-                    <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-foreground text-background text-[11px] font-bold py-1 px-2 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-lg">
-                      {formatRupiah(data.total)}
-                    </div>
+            <div className="mt-4 space-y-3.5">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/60">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600">
+                    <Printer className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-foreground">Dalam Produksi</div>
+                    <div className="text-[10px] text-muted-foreground">Mesin cetak & finishing</div>
                   </div>
-                )
-              })}
+                </div>
+                <span className="text-sm font-black text-foreground">{activeProduction}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/60">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-sky-500/10 text-sky-600">
+                    <Clock className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-foreground">Menunggu Persetujuan</div>
+                    <div className="text-[10px] text-muted-foreground">Verifikasi file & antrean</div>
+                  </div>
+                </div>
+                <span className="text-sm font-black text-foreground">{waitingApprovalCount}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/60">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-foreground">Pesanan Selesai</div>
+                    <div className="text-[10px] text-muted-foreground">Telah diambil / dikirim</div>
+                  </div>
+                </div>
+                <span className="text-sm font-black text-foreground">{completedOrdersCount}</span>
+              </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-border/70 text-center">
-            <span className="text-xs text-muted-foreground">
-              Arahkan kursor ke batang untuk melihat nominal harian
+          <div className="pt-4 border-t border-border/70 space-y-2">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+              Navigasi Cepat
             </span>
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/management/schedule"
+                className="p-2 rounded-xl bg-muted/30 hover:bg-muted/70 border border-border/60 text-xs font-semibold text-foreground flex items-center justify-between transition-colors"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-primary" /> Jadwal
+                </span>
+                <ArrowRight className="h-3 w-3 text-muted-foreground" />
+              </Link>
+              <Link
+                href="/management/reports"
+                className="p-2 rounded-xl bg-muted/30 hover:bg-muted/70 border border-border/60 text-xs font-semibold text-foreground flex items-center justify-between transition-colors"
+              >
+                <span className="flex items-center gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5 text-primary" /> Laporan
+                </span>
+                <ArrowRight className="h-3 w-3 text-muted-foreground" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { revalidatePath } from "next/cache"
 import { OrderStatus } from "@/app/generated/prisma/client"
+import { sendWhatsAppMessage } from "@/lib/whatsapp"
 
 const validTransitions: Record<string, string[]> = {
   PENDING_PAYMENT: ["WAITING_APPROVAL", "CANCELLED"],
@@ -21,7 +22,10 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
     if (session?.user?.role !== "ADMIN" && session?.user?.role !== "MANAGEMENT") {
       return { error: "Anda tidak memiliki akses untuk mengubah status pesanan" }
     }
-    const order = await prisma.order.findUnique({ where: { id: orderId } })
+    const order = await prisma.order.findUnique({ 
+      where: { id: orderId },
+      include: { customer: true }
+    })
     if (!order) {
       return { error: "Pesanan tidak ditemukan" }
     }
@@ -95,6 +99,49 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
         })
       }
     })
+
+    // Kirim notifikasi WhatsApp pembaruan status ke Customer (non-blocking)
+    try {
+      if (order.customer?.phone) {
+        if (newStatus === "IN_PRODUCTION") {
+          sendWhatsAppMessage({
+            phone: order.customer.phone,
+            message:
+`Halo Kak *${order.customer.name}*! 🛠️
+Pembayaran pesanan *#${order.orderNumber}* telah kami verifikasi.
+
+Pesanan Anda saat ini sudah masuk ke antrean *PRODUKSI & CETAK*. Kami akan memproses pesanan Anda dengan kualitas terbaik!`
+          })
+        } else if (newStatus === "READY_FOR_PICKUP") {
+          sendWhatsAppMessage({
+            phone: order.customer.phone,
+            message:
+`Kabar gembira Kak *${order.customer.name}*! 🎉
+Pesanan cetak Anda *#${order.orderNumber}* telah *SELESAI* dan lolos pengecekan Quality Control.
+
+📍 Pesanan sekarang *SIAP DIAMBIL* di workshop Vizada Printing. Terima kasih atas kepercayaan Anda!`
+          })
+        } else if (newStatus === "COMPLETED") {
+          sendWhatsAppMessage({
+            phone: order.customer.phone,
+            message:
+`Terima kasih banyak Kak *${order.customer.name}*! 🙏
+Pesanan *#${order.orderNumber}* telah ditandai *SELESAI / DIAMBIL*.
+
+Senang dapat melayani kebutuhan percetakan Anda. Sampai jumpa di pesanan berikutnya!`
+          })
+        } else if (newStatus === "CANCELLED") {
+          sendWhatsAppMessage({
+            phone: order.customer.phone,
+            message:
+`Pemberitahuan: Pesanan *#${order.orderNumber}* telah berstatus *DIBATALKAN*.
+Jika ada kendala atau pertanyaan, silakan hubungi customer support Vizada Printing.`
+          })
+        }
+      }
+    } catch (waErr) {
+      console.warn("[WhatsApp Notification Error]:", waErr)
+    }
 
     revalidatePath("/admin/orders")
     revalidatePath(`/admin/orders/${orderId}`)

@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
+import { sendWhatsAppMessage } from "@/lib/whatsapp"
 
 export async function createOrder(formData: FormData) {
   try {
@@ -88,6 +89,66 @@ export async function createOrder(formData: FormData) {
         }
       }
     })
+
+    // Kirim notifikasi WhatsApp otomatis (non-blocking)
+    try {
+      const customer = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, phone: true }
+      })
+
+      const formattedTotal = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0
+      }).format(subtotal)
+
+      const formattedDeadline = deadline.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      })
+
+      // 1. Notifikasi WhatsApp ke Customer
+      if (customer?.phone) {
+        sendWhatsAppMessage({
+          phone: customer.phone,
+          message:
+`Halo Kak *${customer.name}*! 👋
+Terima kasih telah memesan di *Vizada Digital Printing*.
+
+📄 *No. Invoice:* #${orderNumber}
+📦 *Layanan:* ${product.name} (${qty} ${product.unit || "pcs"})
+💰 *Total Tagihan:* ${formattedTotal}
+⏰ *Estimasi Deadline:* ${formattedDeadline}
+📌 *Status:* Menunggu Pembayaran
+
+Silakan transfer dan upload bukti pembayaran di detail pesanan Anda melalui website.
+Terima kasih!`
+        })
+      }
+
+      // 2. Notifikasi WhatsApp ke Admin
+      const adminPhone = process.env.WHATSAPP_ADMIN_PHONE
+      if (adminPhone) {
+        sendWhatsAppMessage({
+          phone: adminPhone,
+          message:
+`🔔 *PESANAN BARU MASUK!*
+No. Invoice: #${orderNumber}
+Customer: ${customer?.name || "Pelanggan"} (${customer?.phone || "Tanpa No. HP"})
+Layanan: ${product.name} (${qty} ${product.unit || "pcs"})
+Total: ${formattedTotal}
+Deadline: ${formattedDeadline}
+
+Segera cek dashboard admin untuk detail pesanan.`
+        })
+      }
+    } catch (waErr) {
+      console.warn("[WhatsApp Notification Error]:", waErr)
+    }
+
     revalidatePath("/orders")
     revalidatePath("/admin/orders")
     return { success: true, orderId: order.id }
